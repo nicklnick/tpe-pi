@@ -9,6 +9,8 @@
 #define PELI 1
 #define SERIE 2
 
+#define BLOCK 10
+
 typedef struct TGenre {
     char * genre;
     unsigned cant;  // Cantidad de peliculas del genero
@@ -34,6 +36,23 @@ typedef struct imdbCDT {
     TYearL firstY;
     TYearL currentY;
 } imdbCDT;
+
+static char * copyText(const char * text){          // Copia hasta \0 o hasta el caracter c
+    int i;
+    char * new = NULL;
+
+    for(i=0; text[i]!=0 ; i++){
+        if(i%BLOCK==0){
+            new = realloc(new, (i+BLOCK)*sizeof(char));
+        }
+        new[i] = text[i];
+    }
+
+    new = realloc(new, (i+1)*sizeof(char));
+    new[i]=0;
+    return new;
+}
+
 
 imdbADT newDataBase(){
     return calloc(1, sizeof(imdbCDT));
@@ -81,9 +100,9 @@ void getAmountCurrY(imdbADT data, unsigned * cantPelis, unsigned * cantSeries, u
     *cantSeries = data->currentY->cantSeries;
 }
 
-void getAmountG(imdbADT data, unsigned * year, const char * genero, unsigned * cantPelis){
+void getAmountG(imdbADT data, unsigned * year, char ** genero, unsigned * cantPelis){
     *year = data->currentY->year;
-    genero = data->currentY->currentG->genre;           //!!!!!!!!!!!
+    *genero = data->currentY->currentG->genre;
     *cantPelis = data->currentY->currentG->cant;
 }
 
@@ -136,32 +155,32 @@ int nextG(imdbADT data){
 
 
 
+
 //FRONT
 
-static TGenreL addGenres(TGenreL list, char ** genres, int * cont, unsigned cantGenres){
+static TGenreL addGenres(TGenreL list, char ** genres, unsigned cantGenres){
     int c;
-    if (*cont == cantGenres){
+    if (!cantGenres){
         return list;
     }
     if (list == NULL || (c =(strcmp(list->genre, *genres))) > 0){
         TGenreL newGenre = malloc(sizeof(TGenre));
-        newGenre->genre = *genres;                          //!!!!!!!
+        newGenre->genre = copyText(*genres);
         newGenre->cant = 1;
-        *cont += 1;
-        newGenre->tail = addGenres(list, genres + 1, cont, cantGenres);         //!!!!!!
+        newGenre->tail = addGenres(list, genres + 1, --cantGenres);
         return newGenre;
     }
     else if (c == 0){
         list->cant++;
-        *cont += 1;
-        list->tail = addGenres(list->tail, genres + 1, cont, cantGenres);
+        list->tail = addGenres(list->tail, genres + 1, --cantGenres);
     }
-    list->tail = addGenres(list->tail, genres, cont, cantGenres);
+    list->tail = addGenres(list->tail, genres,  cantGenres);
     return list;
 }
 
-static TYearL updateDataNewYear(TYearL list, TEntry * entry){
-    if (list == NULL || list->year > entry->startYear){
+static TYearL createNewYear(TYearL list, TEntry * entry){
+
+    if(list==NULL || list->year > entry->startYear){
         TYearL newYear = calloc(1, sizeof(TYear));
         newYear->year = entry->startYear;
         if (entry->type == PELI){
@@ -172,27 +191,30 @@ static TYearL updateDataNewYear(TYearL list, TEntry * entry){
             newYear->cantSeries++;
             newYear->serie = *entry;
         }
-        int cont = 0;
-        addGenres(list->firstG, entry->genre, &cont, entry->cantGenres);        //!!!!!!!!
+        newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
         newYear->tail = list;
-        return newYear;
     }
-    list->tail = updateDataNewYear(list->tail, entry);
-    return list;
-
+    if(list->year < entry->startYear){
+        list->tail = createNewYear(list->tail, entry);
+        return list;
+    }
+    return list;        // Caso ya existe
 }
 
-static int updateExistingData(TYearL list, TEntry * entry){             //!!!!!!!! hacer 2 funciones distintas
+void updateExistingData(TYearL list, TEntry * entry){
+    entry->type == PELI ? list->cantPelis++ : list->cantSeries++;
+    list->firstG = addGenres(list->firstG,entry->genre,entry->cantGenres );
+}
+
+static TYearL checkExisting(TYearL list, TEntry * entry){
     if (list == NULL || list->year > entry->startYear){
-        return 0;
+        return NULL;
     }
     if (list->year == entry->startYear){
-        entry->type == PELI ? list->cantPelis++ : list->cantSeries++;
-        int cont = 0;
-        addGenres(list->firstG,entry->genre,&cont,entry->cantGenres );
-        return 1;
+        updateExistingData(list, entry);
+        return list;
     }
-    return updateExistingData(list->tail, entry);
+    return checkExisting(list->tail, entry);
 }
 
 static void updateMostVoted(TYearL list, TEntry * entry){
@@ -200,7 +222,7 @@ static void updateMostVoted(TYearL list, TEntry * entry){
         return;
     }
     if(list->year < entry->startYear){
-        updateMostVoted(list->tail, entry);                 //!!!!!!!!
+        updateMostVoted(list->tail, entry);
         return;
     }
     if (entry->type == PELI){
@@ -218,9 +240,11 @@ static void updateMostVoted(TYearL list, TEntry * entry){
 }
 
 void updateData(imdbADT data, TEntry * entry){
-    if (updateExistingData(data->firstY, entry) == 0){
-        data->firstY = updateDataNewYear(data->firstY,entry);
+    TYearL c;
+    if ((c = checkExisting(data->firstY, entry))==NULL){
+        data->firstY = createNewYear(data->firstY,entry);
         return;                     // ya se updateo el anio, la cant de pelis/series y los generos.
     }
+    updateExistingData(c, entry);
     updateMostVoted(data->firstY ,entry); // solo si el anio ya existia
 }
