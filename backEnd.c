@@ -4,8 +4,8 @@
 #include "backEnd.h"
 
 
-/* Crea el archivo CSV en el que se cargarán los datos */
-FILE *
+/* Crea un archivo "filename" */
+static FILE *
 createCSV(const char * fileName)
 {
     // Si no me pasan el nombre del archivo
@@ -17,44 +17,50 @@ createCSV(const char * fileName)
     return newFile;
 }
 
-void
+/* Carga los datos del query1 en su respectivo archivo */
+static void
 solveQuery1(imdbADT data, FILE * query1)
 {
-    size_t cantPelis, cantSeries;
-    unsigned year;
+    unsigned year, cantPelis, cantSeries;
 
-    getAmountCurrYear(data, &cantPelis, &cantSeries, &year);
-    fprintf(query1, "%d;%zu;%zu\n", year, cantPelis, cantSeries); // Para imprimir size_t tiene que ser %zu
+    getAmountCurrY(data, &cantPelis, &cantSeries, &year);
+    fprintf(query1, "%d;%d;%d\n", year, cantPelis, cantSeries); // Para imprimir size_t tiene que ser %zu
 }
 
-void
+/* Carga los datos del query2 en su respectivo archivo */
+static void
 solveQuery2(imdbADT data, FILE * query2)
 {
-    size_t cantPelis;
-    unsigned year;
+    unsigned year, cantPelis;
     char * genero;
 
     toBeginG(data);
-    while( nextG(data) != NULL )
+    while( nextG(data) )
     {
         getAmountG(data, &year, &genero, &cantPelis);
-        fprintf(query2, "%d;%zu;%s\n", year, cantPelis, genero);
+        fprintf(query2, "%d;%d;%s\n", year, cantPelis, genero);
     }
 }
 
-void
+/* Carga los datos del query3 en su respectivo archivo */
+static void
 solveQuery3(imdbADT data, FILE * query3)
 {
     TEntry peli, serie;
     peli = getMostPopular(data, PELI);
     serie = getMostPopular(data, SERIE);
-    fprintf(query3, "%d;%s;%zu;.2f;%s;zu;.2f",
+    fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
             peli.startYear, peli.name, peli.numVotes, peli.avgRating,
             serie.name, serie.numVotes, serie.avgRating);
 }
 
-/* Carga los datos en los archivos respectivos */
-int
+/* Carga los datos en los archivos respectivos:
+ * - data : estructura que contiene todos los datos procesados del archivo dado
+ * - query1 : file en el que se vuelcan los datos respectivos al primer query
+ * - query2 : file en el que se vuelcan los datos respectivos al segundo query
+ * - query3 : file en el que se vuelcan los datos respectivos al tercer query
+*/
+static int
 loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
 {
     fopen(FNAME_Q1, "at");
@@ -64,11 +70,11 @@ loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fopen(FNAME_Q3, "at");
     fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie", query3);
     toBeginYear(data);
-    while( next(data) != NULL )
+    while( nextYear(data) )
     {
-        solveQuery1(data, FNAME_Q1);
-        solveQuery2(data, FNAME_Q2);
-        solveQuery3(data, FNAME_Q3);
+        solveQuery1(data, query1);
+        solveQuery2(data, query2);
+        solveQuery3(data, query3);
     }
     fclose(query3);
     fclose(query2);
