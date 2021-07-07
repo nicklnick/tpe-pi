@@ -1,24 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 #include "frontEnd.h"
 #include "imdbTAD.h"
 #include "dataTypes.h"
 
-#define ERROR_DE_FILE 5
-#define LINE_MAX 1000
-#define SEPARADOR ";"
-#define MAX_FIELDS 8
+#define LINE_MAX 400
 #define BLOCK 10
-#define EMPTY_FIELD "\\N"
+
+#define SEPARADOR ";"
 #define SEPARADOR_2 ','
-#define OK 1
+
+#define OK 0
+#define ERROR_DE_FILE 5
 
 #define PELI 1
 #define SERIE 2
 #define NO_FIELD 0
+#define EMPTY_FIELD "\\N"
 
 #define UPDATE_TOKEN token = strtok(NULL, SEPARADOR);
 
@@ -48,9 +48,9 @@ static char ** loadGenres(char * line, unsigned * cant){
             genres = realloc(genres, (size + BLOCK) * sizeof(char *));
             size += BLOCK;
         }
-        genres[dim++] = copyText(line + i, SEPARADOR_2);
+        genres[dim++] = copyText(line + i, SEPARADOR_2);        // + i cantidad de offset
 
-        for(;line[i]!=SEPARADOR_2 && line[i]!=0; i++);      // Pasa al proximo genero -> Drama Comedia => Comedia
+        for(;line[i]!=SEPARADOR_2 && line[i]!=0; i++);      // Pasa al proximo genero Ej: Drama Comedia => Comedia
         if(line[i]!=0){
             i++;
         }
@@ -63,7 +63,6 @@ static char ** loadGenres(char * line, unsigned * cant){
 
 static void updateEntry(TEntry * entry, char * line){
     char * token = strtok(line, SEPARADOR);
-
 
     if(!strcmp(token, "movie"))      // Tipo de entry
         entry->type = PELI;
@@ -82,17 +81,16 @@ static void updateEntry(TEntry * entry, char * line){
     else
         entry->endYear = atoi(token);
 
-
     UPDATE_TOKEN
     unsigned cant;
-    entry->genre = loadGenres(token, &cant);
+    entry->genre = loadGenres(token, &cant);        // Carga los generos en la lista
     entry->cantGenres = cant;
 
     UPDATE_TOKEN
-    entry->avgRating = atof(token);
+    entry->avgRating = atof(token);         // Carga el avgRating
 
     UPDATE_TOKEN
-    entry->numVotes = atoi(token);
+    entry->numVotes = atoi(token);         // Carga el numVotes
 
     UPDATE_TOKEN
     if(!strcmp(token, EMPTY_FIELD))      // Verifica que el valor no sea \N
@@ -124,15 +122,11 @@ int readFile(char fileName[]){
 
     TEntry * entry = malloc(sizeof(TEntry));
 
-
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
-    int counter =0;
     while(fgets(line, sizeof(line), imdbFile)) {
-
         updateEntry(entry, line);
 
-        counter++;
         freeResources(entry);
     }
 
