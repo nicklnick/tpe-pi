@@ -5,8 +5,7 @@
 #include "dataTypes.h"
 #include <ctype.h>
 
-void updateEntry(TEntry * entry, char * line);
-void freeResources(TEntry * entry);
+int readFile(char fileName[]);
 
 
 #endif //TPE_FINAL_FRONTEND_H
