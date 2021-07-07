@@ -1,9 +1,9 @@
 
-#include "imdbTAD.h"
-#include "dataType.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+#include "dataTypes.h"
+#include "imdbTAD.h"
 
 #define NO_FIELD 0 // Si el campo no aplica a ese tipo de entrada
 #define PELI 1

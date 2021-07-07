@@ -2,7 +2,7 @@
 #define TPE_IMDBTAD_H
 
 #include <stdio.h>
-#include "dataType.h"
+#include "dataTypes.h"
 
 enum TQuery {Q1 = 1, Q2, Q3};
 
