@@ -201,7 +201,7 @@ static TYearL createNewYear(TYearL list, TEntry * entry){
     return list;        // Caso ya existe
 }
 
-void updateExistingData(TYearL list, TEntry * entry){
+static void updateExistingData(TYearL list, TEntry * entry){
     entry->type == PELI ? list->cantPelis++ : list->cantSeries++;
     list->firstG = addGenres(list->firstG,entry->genre,entry->cantGenres );
 }
