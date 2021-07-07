@@ -3,7 +3,7 @@
 //
 
 #include "imdbTAD.h"
-#include <dataType.h>
+#include "dataType.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -25,9 +25,7 @@ typedef struct TYear {
     size_t cantPelis;
     size_t cantSeries;
     TEntry * peli;  // Peli mas votada
-    size_t votosPeli;
     TEntry * serie; // Serie mas votada
-    size_t votosSerie;
     TGenreL firstG;  // Lista de generos de peliculas
     TGenreL currentG;
     struct TYear * tail;  // Puntero al siguiente año
@@ -59,16 +57,16 @@ static void freeADTYear(TYearL list){
     }
     freeADTYear(list->tail);
     freeADTGenre(list->firstG);
-    free(list->peli.name);
-    free(list->serie.name);
+    free(list->peli->name);
+    free(list->serie->name);
     for (int i = 0; i < list->serie.cantGenres; ++i) {
-        free(list->serie.genre[i]);
+        free(list->serie->genre[i]);
     }
-    free(list->serie.genre);
+    free(list->serie->genre);
     for (int i = 0; i < list->peli.cantGenres; ++i) {
-        free(list->peli.genre[i]);
+        free(list->peli->genre[i]);
     }
-    free(list->peli.genre);
+    free(list->peli->genre);
     free(list);
 }
 
@@ -86,42 +84,43 @@ void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsig
     *cantSeries = data->currentY->cantSeries;
 }
 
-void getAmountG(imdbADT data, char * genero, size_t * cantPelis){
+void getAmountG(imdbADT data, unsigned * year, const char * genero, size_t * cantPelis){
+    *year = data->currentY;
     genero = data->currentY->currentG->genre;
     *cantPelis = data->currentY->currentG->cant;
 }
 
-TEntry getMostPopular(imdbADT data, char type){
-    TEntry mostVoted = malloc(sizeof(TEntry));
+TEntry * getMostPopular(imdbADT data, char type){
+    TEntry * mostVoted = malloc(sizeof(TEntry));
 
     if (type == PELI){
-        mostVoted.name = malloc(strlen(data->currentY->peli->name) + 1); //para que sea una copia verdadera
-        strcpy(mostVoted.name, data->currentY->peli->name);
-        mostVoted.type = PELI;
-        mostVoted.startYear = data->currentY;
-        mostVoted.endYear = NO_FIELD;
-        mostVoted.avgRating = data->currentY->peli->avgRating;
-        mostVoted.runtimeMin = data->currentY->peli->runtimeMin;
-        mostVoted.cantGenres = data->currentY->peli->cantGenres;
-        mostVoted.genre = malloc(sizeof(char*) * mostVoted.cantGenres);
+        mostVoted->name = malloc(strlen(data->currentY->peli->name) + 1); //para que sea una copia verdadera
+        strcpy(mostVoted->name, data->currentY->peli->name);
+        mostVoted->type = PELI;
+        mostVoted->startYear = data->currentY;
+        mostVoted->endYear = NO_FIELD;
+        mostVoted->avgRating = data->currentY->peli->avgRating;
+        mostVoted->runtimeMin = data->currentY->peli->runtimeMin;
+        mostVoted->cantGenres = data->currentY->peli->cantGenres;
+        mostVoted->genre = malloc(sizeof(char*) * mostVoted.cantGenres);
         for (int i = 0; i < mostVoted.cantGenres; ++i) {
-            mostVoted.genre[i] = malloc(strlen(data->currentY->peli->genre[i]) + 1); //para que sea una copia verdadera
-            strcpy(mostVoted.genre[i], data->currentY->peli->genre[i]);
+            mostVoted->genre[i] = malloc(strlen(data->currentY->peli->genre[i]) + 1); //para que sea una copia verdadera
+            strcpy(mostVoted->genre[i], data->currentY->peli->genre[i]);
         }
     }
     else{ //type == SERIE
-        mostVoted.name = malloc(strlen(data->currentY->serie->name) + 1); //para que sea una copia verdadera
-        strcpy(mostVoted.name, data->currentY->serie->name);
-        mostVoted.type = SERIE;
-        mostVoted.startYear = data->currentY;
-        mostVoted.endYear = data->currentY->serie->endYear;
-        mostVoted.avgRating = data->currentY->serie->avgRating;
-        mostVoted.runtimeMin = NO_FIELD;
-        mostVoted.cantGenres = data->currentY->serie->cantGenres;
-        mostVoted.genre = malloc(sizeof(char*) * mostVoted.cantGenres);
+        mostVoted->name = malloc(strlen(data->currentY->serie->name) + 1); //para que sea una copia verdadera
+        strcpy(mostVoted->name, data->currentY->serie->name);
+        mostVoted->type = SERIE;
+        mostVoted->startYear = data->currentY;
+        mostVoted->endYear = data->currentY->serie->endYear;
+        mostVoted->avgRating = data->currentY->serie->avgRating;
+        mostVoted->runtimeMin = NO_FIELD;
+        mostVoted->cantGenres = data->currentY->serie->cantGenres;
+        mostVoted->genre = malloc(sizeof(char*) * mostVoted.cantGenres);
         for (int i = 0; i < mostVoted.cantGenres; ++i) {
-            mostVoted.genre[i] = malloc(strlen(data->currentY->serie->genre[i]) + 1); //para que sea una copia verdadera
-            strcpy(mostVoted.genre[i], data->currentY->serie->genre[i]);
+            mostVoted->genre[i] = malloc(strlen(data->currentY->serie->genre[i]) + 1); //para que sea una copia verdadera
+            strcpy(mostVoted->genre[i], data->currentY->serie->genre[i]);
         }
     }
     return mostVoted;
@@ -166,93 +165,87 @@ int nextG(imdbADT data){
 
 //FRONT
 
-//updateDATA
-
-
-
-
-/*TGenreL updateCantRECGenres(TGenreL list, char * genre) {
-    if (list == NULL || strcmp(list->genre, genre) > 0){
-        TGenreL new = malloc(sizeof(TGenre));
-        new->genre = genre;
-        new->cant = 1;
-        new->tail = list;
-        return new;
+static TGenreL addGenres(TGenreL list, char ** genres, int * cont, unsigned cantGenres){
+    int c;
+    if (*cont == cantGenres){
+        return list;
     }
-    else if (strcmp(list->genre, genre) == 0) {
+    if (list == NULL || (c =(strcmp(list->genre, *genres))) > 0){
+        TGenreL newGenre = malloc(sizeof(TGenre));
+        newGenre->genre = *genres;
+        newGenre->cant = 1;
+        *cont += 1;
+        newGenre->tail = addGenres(list, genres + 1);
+        return newGenre;
+    }
+    else if (c == 0){
         list->cant++;
-        return list;
+        *cont += 1;
+        list->tail = addGenres(list->tail, genres + 1);
     }
-    else {
-        list->tail = updateCantRECGenres(list->tail, genre);
-        return list;
-    }
+    list->tail = addGenres(list->tail, genres);
+    return list;
 }
 
+static TYearL updateDataNewYear(TYearL list, TEntry * entry){
+    if (list == NULL || list->year > entry->startYear){
+        TYearL newYear = calloc(1, sizeof(TYear));
+        newYear->year = entry->startYear;
+        if (entry->type == PELI){
+            newYear->cantPelis++;
+            newYear->peli = entry;
+        }
+        else{ //entry->type == SERIE8
+            newYear->cantSeries++;
+            newYear->serie = entry;
+        }
+        int cont = 0;
+        addGenres(list->firstG, entry->genre, &cont, entry->cantGenres);
+        newYear->tail = list;
+        return newYear;
+    }
+    list->tail = updateDataNewYear(list->tail, entry);
+    return list;
 
-void updateCantREC(TYearL list, unsigned year, char type, char * genre){
-    if (list == NULL || list->year < year){
-        addMov;
+}
+
+static int updateExistingData(TYearL list, TEntry * entry){
+    if (list == NULL || list->year > entry->startYear){
+        return 0;
+    }
+    if (list->year == entry->startYear){
+        entry->type == PELI? list->cantPelis++ : list->cantSeries++;
+        int cont = 0;
+        addGenres(list->firstG,entry->genre,&cont,entry->cantGenres );
+        return 1;
+    }
+    return updateExistingData(list->tail, entry);
+}
+
+static void updateMostVoted(const TYearL list, TEntry * entry){
+    if (list == NULL || list->year > entry->startYear){
         return;
     }
-    else if (type == PELI && list->year == year){ //el ano es el indicado y es una pelicula
-        list->cantPelis++;
-        return;
-    }
-    else if (type == SERIE && list->year == year){ //el ano es el indicado y es una serie
-        list->cantSeries++;
-        return;
-    }
-    else if (type == NO_FIELD && list->year == year){ //updatea la cant de generos
-        updateCantRECGenres(list->firstGenre);
-        return;
-    }
-    else{
-        updateCantREC(list->tail, year, type);
-    }
-}
-
-void updateNodes(imdbADT data, unsigned year, char type, char * genre){
-    updateCantREC(data->firstY, year, type,genre);
-}
-
-void update()*/
-
-void toBeginYear(imdbADT data){
-    data->currentY = data->firstY;
-}
-
-int hasNextYear(imdbADT data){
-    data->currentY != NULL;
-}
-
-TYearL nextYear(imdbADT data){
-    if (hasNextYear(data) == 0){
-        // ????
-    }
-    else{
-        TYearL aux = data->currentY;
-        data->currentY = data->currentY->tail;
-        return aux;
+    else if (list->year == entry->startYear){
+        if (entry->type == PELI){
+            if (entry->numVotes > list->peli->numVotes){
+                list->peli = entry;
+                return;
+            }
+        }
+        else{ //entry->type == SERIE
+            if (entry->numVotes > list->serie->numVotes){
+                list->serie = entry;
+                return;
+            }
+        }
     }
 }
 
-void toBeginGenre(imdbADT data){
-    data->currentY->currentGenre = data->currentY->firstGenre;
-}
-
-int hasNextGenre(imdbADT data){
-    return data->currentY->currentGenre != NULL;
-}
-
-TGenreL nextGenre(imdbADT data){
-    if (hasNextGenre(data) == 0){
-
+void updateData(imdbADT data, TEntry * entry){
+    if (updateExistingData(data->firstY, entry) == 0){
+        data->firstY = updateDataNewYear(data->firstY,entry);
+        return; // ya se updateo el anio, la cant de pelis/series y los generos.
     }
-    else{
-        TGenreL aux = data->currentY->currentGenre;
-        data->currentY->currentGenre = data->currentY->currentGenre->tail;
-        return aux;
-    }
+    updateMostVoted(data->firstY ,entry); // solo si el anio ya existia
 }
-

@@ -11,6 +11,7 @@ typedef struct TEntry {
     unsigned startYear; // Año de lanzamiento (peli) o comienzo de emision (serie)
     unsigned endYear;   // Año de fin de emision, o NO_FIELD si no termino o NO_FILED si es peli
     float avgRating;
+    size_t numVotes;
     unsigned runtimeMin; // Runtime si es peli o NO_FIELD si es serie
     char ** genre;
     unsigned cantGenres;
