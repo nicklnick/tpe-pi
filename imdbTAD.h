@@ -46,7 +46,7 @@ int nextG(imdbADT data);
  * - cantSeries : la cantidad de series del año year.
  * - year : año del que estamos sacando la informacion
  */
-void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsigned * year);
+void getAmountCurrY(imdbADT data, unsigned * cantPelis, unsigned * cantSeries, unsigned * year);
 
 /*
  * Devuelve en 3 paramentros de salida:
@@ -54,7 +54,7 @@ void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsig
  * - genero : genero que estamos consultando
  * - cantPelis : la cantidad de peliculas del año year del genero.
  */
-void getAmountG(imdbADT data, unsigned * year, const char * genero, size_t * cantPelis);
+void getAmountG(imdbADT data, unsigned * year, char ** genero, unsigned * cantPelis);
 
 /* Devuelve una copia de la peli/serie con mas votos */
 TEntry * getMostPopular(imdbADT data, char type);
