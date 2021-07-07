@@ -151,15 +151,15 @@ static TGenreL addGenres(TGenreL list, char ** genres, int * cont, unsigned cant
         newGenre->genre = *genres;
         newGenre->cant = 1;
         *cont += 1;
-        newGenre->tail = addGenres(list, genres + 1);
+        newGenre->tail = addGenres(list, genres + 1, cont, cantGenres);
         return newGenre;
     }
     else if (c == 0){
         list->cant++;
         *cont += 1;
-        list->tail = addGenres(list->tail, genres + 1);
+        list->tail = addGenres(list->tail, genres + 1, cont, cantGenres);
     }
-    list->tail = addGenres(list->tail, genres);
+    list->tail = addGenres(list->tail, genres, cont, cantGenres);
     return list;
 }
 
