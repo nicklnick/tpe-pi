@@ -1,6 +1,3 @@
-//
-// Created by on 5/7/2021.
-//
 
 #include "imdbTAD.h"
 #include "dataType.h"
@@ -14,7 +11,7 @@
 
 typedef struct TGenre {
     char * genre;
-    size_t cant;  // Cantidad de peliculas del genero
+    unsigned cant;  // Cantidad de peliculas del genero
     struct TGenre * tail;
 } TGenre;
 
@@ -22,8 +19,8 @@ typedef TGenre * TGenreL;
 
 typedef struct TYear {
     unsigned year;
-    size_t cantPelis;
-    size_t cantSeries;
+    unsigned cantPelis;
+    unsigned cantSeries;
     TEntry peli;  // Peli mas votada
     TEntry serie; // Serie mas votada
     TGenreL firstG;  // Lista de generos de peliculas
@@ -59,11 +56,11 @@ static void freeADTYear(TYearL list){
     freeADTGenre(list->firstG);
     free(list->peli.name);
     free(list->serie.name);
-    for (int i = 0; i < list->serie.cantGenres; ++i) {
+    for (int i = 0; i < list->serie.cantGenres; i++) {
         free(list->serie.genre[i]);
     }
     free(list->serie.genre);
-    for (int i = 0; i < list->peli.cantGenres; ++i) {
+    for (int i = 0; i < list->peli.cantGenres; i++) {
         free(list->peli.genre[i]);
     }
     free(list->peli.genre);
@@ -78,15 +75,15 @@ void freeADT(imdbADT data){
 
 //BACK
 
-void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsigned * year){
+void getAmountCurrY(imdbADT data, unsigned * cantPelis, unsigned * cantSeries, unsigned * year){
     *year = data->currentY->year;
     *cantPelis = data->currentY->cantPelis;
     *cantSeries = data->currentY->cantSeries;
 }
 
-void getAmountG(imdbADT data, unsigned * year, const char * genero, size_t * cantPelis){
+void getAmountG(imdbADT data, unsigned * year, const char * genero, unsigned * cantPelis){
     *year = data->currentY->year;
-    genero = data->currentY->currentG->genre;
+    genero = data->currentY->currentG->genre;           //!!!!!!!!!!!
     *cantPelis = data->currentY->currentG->cant;
 }
 
@@ -148,10 +145,10 @@ static TGenreL addGenres(TGenreL list, char ** genres, int * cont, unsigned cant
     }
     if (list == NULL || (c =(strcmp(list->genre, *genres))) > 0){
         TGenreL newGenre = malloc(sizeof(TGenre));
-        newGenre->genre = *genres;
+        newGenre->genre = *genres;                          //!!!!!!!
         newGenre->cant = 1;
         *cont += 1;
-        newGenre->tail = addGenres(list, genres + 1, cont, cantGenres);
+        newGenre->tail = addGenres(list, genres + 1, cont, cantGenres);         //!!!!!!
         return newGenre;
     }
     else if (c == 0){
@@ -176,7 +173,7 @@ static TYearL updateDataNewYear(TYearL list, TEntry * entry){
             newYear->serie = *entry;
         }
         int cont = 0;
-        addGenres(list->firstG, entry->genre, &cont, entry->cantGenres);
+        addGenres(list->firstG, entry->genre, &cont, entry->cantGenres);        //!!!!!!!!
         newYear->tail = list;
         return newYear;
     }
@@ -185,12 +182,12 @@ static TYearL updateDataNewYear(TYearL list, TEntry * entry){
 
 }
 
-static int updateExistingData(TYearL list, TEntry * entry){
+static int updateExistingData(TYearL list, TEntry * entry){             //!!!!!!!! hacer 2 funciones distintas
     if (list == NULL || list->year > entry->startYear){
         return 0;
     }
     if (list->year == entry->startYear){
-        entry->type == PELI? list->cantPelis++ : list->cantSeries++;
+        entry->type == PELI ? list->cantPelis++ : list->cantSeries++;
         int cont = 0;
         addGenres(list->firstG,entry->genre,&cont,entry->cantGenres );
         return 1;
@@ -198,22 +195,24 @@ static int updateExistingData(TYearL list, TEntry * entry){
     return updateExistingData(list->tail, entry);
 }
 
-static void updateMostVoted(const TYearL list, TEntry * entry){
+static void updateMostVoted(TYearL list, TEntry * entry){
     if (list == NULL || list->year > entry->startYear){
         return;
     }
-    else if (list->year == entry->startYear){
-        if (entry->type == PELI){
-            if (entry->numVotes > list->peli.numVotes){
-                list->peli = *entry;
-                return;
-            }
+    if(list->year < entry->startYear){
+        updateMostVoted(list->tail, entry);                 //!!!!!!!!
+        return;
+    }
+    if (entry->type == PELI){
+        if (entry->numVotes > list->peli.numVotes){
+            list->peli = *entry;
+            return;
         }
-        else{ //entry->type == SERIE
-            if (entry->numVotes > list->serie.numVotes){
-                list->serie = *entry;
-                return;
-            }
+    }
+    else { //entry->type == SERIE
+        if (entry->numVotes > list->serie.numVotes) {
+            list->serie = *entry;
+            return;
         }
     }
 }
@@ -221,7 +220,7 @@ static void updateMostVoted(const TYearL list, TEntry * entry){
 void updateData(imdbADT data, TEntry * entry){
     if (updateExistingData(data->firstY, entry) == 0){
         data->firstY = updateDataNewYear(data->firstY,entry);
-        return; // ya se updateo el anio, la cant de pelis/series y los generos.
+        return;                     // ya se updateo el anio, la cant de pelis/series y los generos.
     }
     updateMostVoted(data->firstY ,entry); // solo si el anio ya existia
 }
