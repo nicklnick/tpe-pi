@@ -6,10 +6,11 @@
 #define TPE_IMDBTAD_H
 
 #include <stdio.h>
+#include "dataType.h"
 
 enum TQuery {Q1 = 1, Q2, Q3};
 
-typedef imdbCDT * imdbADT;
+typedef struct imdbCDT * imdbADT;
 
 imdbADT newDataBase();
 
@@ -34,8 +35,8 @@ int nextG(imdbADT data); //se fija si hay proximo genero llamando a hasNextG y s
 void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsigned * year);
 
 // Devuelve los generos y sus cantidades de peliculas del anio que esta en el iterador
-void getAmountG(imdbADT data,unsigned * year, char * genero, size_t * cantPelis);
+void getAmountG(imdbADT data, unsigned * year, const char * genero, size_t * cantPelis);
 
 // Devuelve una copia de la peli/serie con mas votos
-TEntry getMostPopular(imdbADT data, char type);
+TEntry * getMostPopular(imdbADT data, char type);
 

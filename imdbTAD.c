@@ -24,8 +24,8 @@ typedef struct TYear {
     unsigned year;
     size_t cantPelis;
     size_t cantSeries;
-    TEntry * peli;  // Peli mas votada
-    TEntry * serie; // Serie mas votada
+    TEntry peli;  // Peli mas votada
+    TEntry serie; // Serie mas votada
     TGenreL firstG;  // Lista de generos de peliculas
     TGenreL currentG;
     struct TYear * tail;  // Puntero al siguiente año
@@ -57,16 +57,16 @@ static void freeADTYear(TYearL list){
     }
     freeADTYear(list->tail);
     freeADTGenre(list->firstG);
-    free(list->peli->name);
-    free(list->serie->name);
+    free(list->peli.name);
+    free(list->serie.name);
     for (int i = 0; i < list->serie.cantGenres; ++i) {
-        free(list->serie->genre[i]);
+        free(list->serie.genre[i]);
     }
-    free(list->serie->genre);
+    free(list->serie.genre);
     for (int i = 0; i < list->peli.cantGenres; ++i) {
-        free(list->peli->genre[i]);
+        free(list->peli.genre[i]);
     }
-    free(list->peli->genre);
+    free(list->peli.genre);
     free(list);
 }
 
@@ -85,7 +85,7 @@ void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsig
 }
 
 void getAmountG(imdbADT data, unsigned * year, const char * genero, size_t * cantPelis){
-    *year = data->currentY;
+    *year = data->currentY->year;
     genero = data->currentY->currentG->genre;
     *cantPelis = data->currentY->currentG->cant;
 }
@@ -94,34 +94,10 @@ TEntry * getMostPopular(imdbADT data, char type){
     TEntry * mostVoted = malloc(sizeof(TEntry));
 
     if (type == PELI){
-        mostVoted->name = malloc(strlen(data->currentY->peli->name) + 1); //para que sea una copia verdadera
-        strcpy(mostVoted->name, data->currentY->peli->name);
-        mostVoted->type = PELI;
-        mostVoted->startYear = data->currentY;
-        mostVoted->endYear = NO_FIELD;
-        mostVoted->avgRating = data->currentY->peli->avgRating;
-        mostVoted->runtimeMin = data->currentY->peli->runtimeMin;
-        mostVoted->cantGenres = data->currentY->peli->cantGenres;
-        mostVoted->genre = malloc(sizeof(char*) * mostVoted.cantGenres);
-        for (int i = 0; i < mostVoted.cantGenres; ++i) {
-            mostVoted->genre[i] = malloc(strlen(data->currentY->peli->genre[i]) + 1); //para que sea una copia verdadera
-            strcpy(mostVoted->genre[i], data->currentY->peli->genre[i]);
-        }
+        *mostVoted = data->currentY->peli;
     }
-    else{ //type == SERIE
-        mostVoted->name = malloc(strlen(data->currentY->serie->name) + 1); //para que sea una copia verdadera
-        strcpy(mostVoted->name, data->currentY->serie->name);
-        mostVoted->type = SERIE;
-        mostVoted->startYear = data->currentY;
-        mostVoted->endYear = data->currentY->serie->endYear;
-        mostVoted->avgRating = data->currentY->serie->avgRating;
-        mostVoted->runtimeMin = NO_FIELD;
-        mostVoted->cantGenres = data->currentY->serie->cantGenres;
-        mostVoted->genre = malloc(sizeof(char*) * mostVoted.cantGenres);
-        for (int i = 0; i < mostVoted.cantGenres; ++i) {
-            mostVoted->genre[i] = malloc(strlen(data->currentY->serie->genre[i]) + 1); //para que sea una copia verdadera
-            strcpy(mostVoted->genre[i], data->currentY->serie->genre[i]);
-        }
+    else{ // type == SERIE
+        *mostVoted = data->currentY->serie;
     }
     return mostVoted;
 }
@@ -193,11 +169,11 @@ static TYearL updateDataNewYear(TYearL list, TEntry * entry){
         newYear->year = entry->startYear;
         if (entry->type == PELI){
             newYear->cantPelis++;
-            newYear->peli = entry;
+            newYear->peli = *entry;
         }
         else{ //entry->type == SERIE8
             newYear->cantSeries++;
-            newYear->serie = entry;
+            newYear->serie = *entry;
         }
         int cont = 0;
         addGenres(list->firstG, entry->genre, &cont, entry->cantGenres);
@@ -228,14 +204,14 @@ static void updateMostVoted(const TYearL list, TEntry * entry){
     }
     else if (list->year == entry->startYear){
         if (entry->type == PELI){
-            if (entry->numVotes > list->peli->numVotes){
-                list->peli = entry;
+            if (entry->numVotes > list->peli.numVotes){
+                list->peli = *entry;
                 return;
             }
         }
         else{ //entry->type == SERIE
-            if (entry->numVotes > list->serie->numVotes){
-                list->serie = entry;
+            if (entry->numVotes > list->serie.numVotes){
+                list->serie = *entry;
                 return;
             }
         }
