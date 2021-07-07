@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "frontEnd.h"
 #include "imdbTAD.h"
+#include "dataTypes.h"
 
 #define ERROR_DE_FILE 5
 #define LINE_MAX 200
@@ -18,19 +20,6 @@
 #define SERIE 2
 #define NO_FIELD 0
 
-enum TField {titleType = 0, title, startYear, endYear, genres, rating, numVotes, runtime};
-
-typedef struct TEntry {
-    char * name;  // Nombre de la serie o pelicula
-    char type;    // Serie = SERIE y Peli = PELI
-    size_t numVotes;
-    unsigned startYear; // Año de lanzamiento (peli) o comienzo de emision (serie)
-    unsigned endYear;   // Año de fin de emision, o NO_FIELD si no termino o NO_FILED si es peli
-    float avgRating;
-    unsigned runtimeMin; // Runtime si es peli o NO_FIELD si es serie
-    char ** genre;
-    unsigned cantGenres;
-} TEntry;
 
 
 static char * copyText(const char * text){
@@ -49,21 +38,23 @@ static char * copyText(const char * text){
     return new;
 }
 
-char ** getAllFields(char * line){
+static char ** getAllFields(char * line){
     char ** entryVec = malloc(sizeof(char *)*MAX_FIELDS);
     char * token = strtok(line, SEPARADOR);
 
     for(int i =0; i < MAX_FIELDS; i++){
         entryVec[i] = copyText(token);
+        token = strtok(NULL, SEPARADOR);
     }
     return entryVec;
 }
 
-char ** loadGenres(char ** genres, char * line){
+static char ** loadGenres( char * line, unsigned * cant){
     int i, size, dim;
     char * token = strtok(line, SEPARADOR_2);
+    char ** genres = NULL;
 
-    for(i=0, size=0, dim=0; line[i]!=0; i++){
+    for(size=0, dim=0; token!=NULL ;){
 
         if(size%BLOCK==0) {
             genres = realloc(genres, (size + BLOCK) * sizeof(char *));
@@ -75,7 +66,7 @@ char ** loadGenres(char ** genres, char * line){
         token = strtok(NULL, SEPARADOR_2);
     }
     genres = realloc(genres, dim*sizeof(char *));
-
+    *cant = dim;
     return genres;
 }
 
@@ -97,7 +88,9 @@ void updateEntry(TEntry * entry, char * line){
     else
         entry->endYear = atoi(fields[endYear]);
 
-    entry->genre = loadGenres(entry->genre, fields[genres]);
+    unsigned cant;
+    entry->genre = loadGenres(fields[genres], &cant);
+    entry->cantGenres = cant;
 
     entry->avgRating = atoi(fields[rating]);
 
@@ -115,6 +108,7 @@ void freeResources(TEntry * entry){
     for(int i=0; i<entry->cantGenres; i++){
         free(entry->genre[i]);
     }
+    free(entry->genre);
 }
 
 
@@ -131,7 +125,7 @@ int readFile(char fileName[]){
 
     while(fgets(line, sizeof(line), imdbFile)) {
         updateEntry(entry, line);
-        updateData(entry);
+        //updateData(entry);
 
         freeResources(entry);
     }
