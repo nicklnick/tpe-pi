@@ -15,47 +15,27 @@ imdbADT newDataBase();
 
 void freeADT(imdbADT data);
 
-/* Devuelve la cantidad de series y de pelis en un ano determinado que esta en el iterador.
- * VECTOR DE 3 posiciones (ano/cantPelis/cantSeries) */
-unsigned int * getAmount(const imdbADT data);
+//FRONT
 
-/* Devuelve la pelicula o serie mas votada de un ano determinado que este en el iterador*/
-TEntry getMostPopular(const imdbADT data, char type);
+void updateData(TEntry * entry);
 
-
-/* Devuelve la cantidad de peliculas y series de un genero especifico que esta en el iterador*/
-size_t getAmountPerGenre(const imdbADT data);
-
-/* devuelve los votos de la pelicula o serie con mas votos de un ano especifico*/
-size_t getMostVotes(imdbADT data, unsigned year, char type);
-
-// updateInicial para agregar peli y serie y su genero si ya existe
-
-/* actualiza la cantidad de pelis/series que hay en un ano o la cantidad de peliculas o series con cierto genero en un ano)*/
-//void updateCant(imdbADT data, unsigned year, char type, char * genre);
-
-//void updateCantGenres(imdbADT data, char * genre);
-
-//void updateMostVoted(imdbADT data);
-
-
-
-/* funciones para iterar */
+//BACK
 
 void toBeginYear(imdbADT data);
-
+int nextYear(imdbADT data); //se fija si hay proximo anio llamando a hasNextYear y si hay aumenta el iterador
 int hasNextYear(imdbADT data);
 
-TYearL nextYear(imdbADT data);
+void toBeginG(imdbADT data);
+int hasNextG(imdbADT data);
+int nextG(imdbADT data); //se fija si hay proximo genero llamando a hasNextG y si hay aumenta el iterador
 
 
+// Devuelve la cantidad de peliculas y series del anio que esta en el iterador en parametros de salida
+void getAmountCurrY(imdbADT data, size_t * cantPelis, size_t * cantSeries, unsigned * year);
 
-/* funciones para iterar el genero */
+// Devuelve los generos y sus cantidades de peliculas del anio que esta en el iterador
+void getAmountG(imdbADT data, char * genero, size_t * cantPelis);
 
-void toBeginGenre(imdbADT data);
+// Devuelve una copia de la peli/serie con mas votos
+TEntry getMostPopular(imdbADT data, char type);
 
-int hasNextGenre(imdbADT data);
-
-TGenreL nextGenre(imdbADT data);
-
-#endif //TPE_IMDBTAD_H
