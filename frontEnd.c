@@ -110,7 +110,7 @@ static void freeResources(TEntry * entry){
 }
 
 
-int readFile(char fileName[]){
+int readFile(char fileName[], imdbADT data){
     FILE * imdbFile;
     imdbFile = fopen(fileName, "r");
 
@@ -126,6 +126,7 @@ int readFile(char fileName[]){
 
     while(fgets(line, sizeof(line), imdbFile)) {
         updateEntry(entry, line);
+        updateData(data, entry);
 
         freeResources(entry);
     }
