@@ -1,16 +1,10 @@
 //
 // Created by on 6/7/2021.
 //
-#include <stdio.h>
-#include <stdlib.h>
-#include "imdbTAD.h"
+#include "backEnd.h"
 
-#define FNAME_Q1 "query1.csv"
-#define FNAME_Q2 "query2.csv"
-#define FNAME_Q3 "query3.csv"
 
 /* Crea el archivo CSV en el que se cargarán los datos */
-/* fields = los campos que va a tener el .csv */
 FILE *
 createCSV(const char * fileName)
 {
@@ -22,7 +16,6 @@ createCSV(const char * fileName)
     fclose(newFile);
     return newFile;
 }
-
 
 void
 solveQuery1(imdbADT data, FILE * query1)
@@ -44,7 +37,7 @@ solveQuery2(imdbADT data, FILE * query2)
     toBeginG(data);
     while( nextG(data) != NULL )
     {
-        getAmountG(data, &genero, &cantPelis);
+        getAmountG(data, &year, &genero, &cantPelis);
         fprintf(query2, "%d;%zu;%s\n", year, cantPelis, genero);
     }
 }
@@ -59,9 +52,8 @@ solveQuery3(imdbADT data, FILE * query3)
             peli.startYear, peli.name, peli.numVotes, peli.avgRating,
             serie.name, serie.numVotes, serie.avgRating);
 }
-/*
- * Carga los datos en los archivos respectivos
- */
+
+/* Carga los datos en los archivos respectivos */
 int
 loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
 {
