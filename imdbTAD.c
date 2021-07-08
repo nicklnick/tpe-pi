@@ -183,34 +183,35 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres)
     return list;
 }
 
-static TYearL
-createNewYear(TYearL list, TEntry * entry)
-{
-    if( list==NULL || list->year < entry->startYear){
-        TYearL newYear = calloc(1, sizeof(TYear));
-        newYear->year = entry->startYear;
-        if (entry->type == PELI)
-        {
-            newYear->cantPelis++;
-            newYear->peli = *entry;
-            newYear->peli.name = copyText(entry->name);
-        }
-        else //entry->type == SERIE8
-        {
-            newYear->cantSeries++;
-            newYear->serie = *entry;
-            newYear->serie.name = copyText(entry->name);
-        }
-        newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
-        newYear->tail = list;
-        return newYear;
+static void
+createNewYear(TYearL prevList, TEntry * entry) {
+
+    TYearL newYear = calloc(1, sizeof(TYear));
+    newYear->year = entry->startYear;
+    if (entry->type == PELI) {
+        newYear->cantPelis++;
+        newYear->peli = *entry;
+        newYear->peli.name = copyText(entry->name);
     }
-    if(list->year > entry->startYear) {
-        list->tail = createNewYear(list->tail, entry);
-        return list;
+    else //entry->type == SERIE8
+    {
+        newYear->cantSeries++;
+        newYear->serie = *entry;
+        newYear->serie.name = copyText(entry->name);
     }
-    return list;        // Caso ya existe
+
+    newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
+
+    // Caso en donde la lista esta vacia
+    if (prevList == NULL){
+        newYear->tail = NULL;
+        return;
+    }
+    newYear->tail = prevList->tail;
+    prevList->tail = newYear;
 }
+
+
 
 static void updateExistingData(TYearL list, TEntry * entry) {
     if(entry->type == PELI)
@@ -220,16 +221,19 @@ static void updateExistingData(TYearL list, TEntry * entry) {
     list->firstG = addGenres(list->firstG,entry->genre,entry->cantGenres);
 }
 
-static TYearL checkExisting(TYearL list, TEntry * entry) {
+static TYearL checkExisting(TYearL list, TEntry * entry, char * flag) {
     TYearL auxList = list;
+    TYearL prevAuxList = NULL;
 
-    while (auxList != NULL && list->year >= entry->startYear) {
+    while (auxList != NULL && auxList->year >= entry->startYear) {
         if (auxList->year == entry->startYear) {
+            *flag = 1;
             return auxList;
         }
+        prevAuxList = auxList;
         auxList = auxList->tail;
     }
-    return NULL; // no encontro que exista
+    return prevAuxList; // no encontro que exista
 }
 
 
@@ -261,11 +265,12 @@ static void updateMostVoted(TYearL list, TEntry * entry) {
 void updateData(imdbADT data, TEntry * entry){
     TYearL c;
     // Chequea si existe el año, si no existe lo crea
-    if ( (c = checkExisting(data->firstY, entry)) == NULL ) {
-        data->firstY = createNewYear(data->firstY,entry);
+    char found = 0; // se usa para conocer si checkExisting encontro el anio creado
+    c = checkExisting(data->firstY, entry, &found);
+    if ( !found ) {
+        createNewYear(c,entry);
         return;
     }
-
      // Si el año ya existia
     updateExistingData(c, entry);
     updateMostVoted(data->firstY ,entry);
