@@ -81,16 +81,6 @@ freeADTYear(TYearL list)
     free(list->peli.name);
     free(list->serie.name);
 
-    // Liberamos los generos de las series
-    for(int i = 0; i < list->serie.cantGenres; i++)
-        free(list->serie.genre[i]);
-    free(list->serie.genre);
-
-    // Liberamos los generos de las pelis
-    for(int i = 0; i < list->peli.cantGenres; i++)
-        free(list->peli.genre[i]);
-    free(list->peli.genre);
-
     free(list);
 }
 
@@ -191,12 +181,14 @@ static TYearL createYear(TEntry * entry){
     {
         newYear->cantPelis++;
         newYear->peli = *entry;
+        newYear->peli.genre = NULL;
         newYear->peli.name = copyText(entry->name);
     }
     else //entry->type == SERIE
     {
         newYear->cantSeries++;
         newYear->serie = *entry;
+        newYear->serie.genre = NULL;
         newYear->serie.name = copyText(entry->name);
     }
     newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
@@ -208,12 +200,14 @@ static void updateMostPolular(TYearL current, TEntry * entry){
     if (entry->numVotes > current->peli.numVotes) {            //UPDATE MOST VOTED
         current->peli = *entry;
         current->peli.name = copyText(entry->name);
+        current->peli.genre = NULL;
     }
     else //entry->type == SERIE
     {
         if (entry->numVotes > current->serie.numVotes) {
             current->serie = *entry;
             current->serie.name = copyText(entry->name);
+            current->serie.genre = NULL;
         }
     }
 }
