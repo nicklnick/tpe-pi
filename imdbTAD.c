@@ -221,43 +221,42 @@ static void updateExistingData(TYearL list, TEntry * entry) {
 }
 
 static TYearL checkExisting(TYearL list, TEntry * entry) {
-    if (list == NULL || list->year < entry->startYear)
-        return NULL;
+    TYearL auxList = list;
 
-    if (list->year == entry->startYear) {
-        updateExistingData(list, entry);
-        return list;
+    while (auxList != NULL && list->year >= entry->startYear) {
+        if (auxList->year == entry->startYear) {
+            return auxList;
+        }
+        auxList = auxList->tail;
     }
-
-    return checkExisting(list->tail, entry);
+    return NULL; // no encontro que exista
 }
+
 
 static void updateMostVoted(TYearL list, TEntry * entry) {
-    if( list == NULL || list->year < entry->startYear )
-        return;
+    TYearL auxList = list;
 
-    if(list->year > entry->startYear)
-    {
-        updateMostVoted(list->tail, entry);
-        return;
-    }
-    else if( entry->type == PELI )
-    {
-        if (entry->numVotes > list->peli.numVotes) {
-            list->peli = *entry;
-            list->peli.name = copyText(entry->name);
-            return;
+    while (auxList != NULL && auxList->year >= entry->startYear) {
+        if (auxList->year == entry->startYear) {
+            if (entry->type == PELI) {
+                if (entry->numVotes > auxList->peli.numVotes) {
+                    auxList->peli = *entry;
+                    auxList->peli.name = copyText(entry->name);
+                }
+
+            }
+            else {  //entry->type == SERIE
+                if (entry->numVotes > auxList->serie.numVotes){
+                    auxList->serie = *entry;
+                    auxList->serie.name = copyText(entry->name);
+                }
+            }
         }
-    }
-    else //entry->type == SERIE
-    {
-        if (entry->numVotes > list->serie.numVotes) {
-            list->serie = *entry;
-            list->serie.name = copyText(entry->name);
-            return;
-        }
+        auxList = auxList->tail;
     }
 }
+
+
 
 void updateData(imdbADT data, TEntry * entry){
     TYearL c;
