@@ -46,12 +46,12 @@ solveQuery2(imdbADT data, FILE * query2)
 static void
 solveQuery3(imdbADT data, FILE * query3)
 {
-    TEntry peli, serie;
+    TEntry * peli, * serie;
     peli = getMostPopular(data, PELI);
     serie = getMostPopular(data, SERIE);
     fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
-            peli.startYear, peli.name, peli.numVotes, peli.avgRating,
-            serie.name, serie.numVotes, serie.avgRating);
+            peli->startYear, peli->name, peli->numVotes, peli->avgRating,
+            serie->name, serie->numVotes, serie->avgRating);
 }
 
 /* Carga los datos en los archivos respectivos:

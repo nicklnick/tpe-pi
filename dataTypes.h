@@ -14,4 +14,7 @@ typedef struct TEntry {
     unsigned cantGenres;
 } TEntry;
 
+#define PELI 1
+#define SERIE 2
+
 #endif //TPE_FINAL_DATATYPES_H

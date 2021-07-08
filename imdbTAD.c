@@ -200,6 +200,7 @@ createNewYear(TYearL list, TEntry * entry)
         }
         newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
         newYear->tail = list;
+        return newYear;
     }
     if(list->year < entry->startYear) {
         list->tail = createNewYear(list->tail, entry);
