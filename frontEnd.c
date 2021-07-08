@@ -124,10 +124,13 @@ int readFile(char fileName[], imdbADT data){
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
+    int counter= 0;
     while(fgets(line, sizeof(line), imdbFile)) {
+        if(counter==200000)
+            puts("hola");
         updateEntry(entry, line);
         updateData(data, entry);
-
+        counter++;
         freeResources(entry);
     }
 

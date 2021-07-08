@@ -131,7 +131,7 @@ void toBeginYear(imdbADT data) {
 }
 
 int hasNextYear(imdbADT data) {
-    return data->currentY != NULL;
+    return data->currentY->tail != NULL;
 }
 
 int nextYear(imdbADT data) {
@@ -147,7 +147,7 @@ void toBeginG(imdbADT data) {
 }
 
 int hasNextG(imdbADT data) {
-    return data->currentY->currentG != NULL;
+    return data->currentY->currentG->tail != NULL;
 }
 
 int nextG(imdbADT data){
@@ -177,6 +177,7 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres)
     {
         list->cant++;
         list->tail = addGenres(list->tail, genres + 1, cantGenres - 1);
+        return list;
     }
     list->tail = addGenres(list->tail, genres,  cantGenres);
     return list;
@@ -185,24 +186,26 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres)
 static TYearL
 createNewYear(TYearL list, TEntry * entry)
 {
-    if( list==NULL || list->year > entry->startYear){
+    if( list==NULL || list->year < entry->startYear){
         TYearL newYear = calloc(1, sizeof(TYear));
         newYear->year = entry->startYear;
         if (entry->type == PELI)
         {
             newYear->cantPelis++;
             newYear->peli = *entry;
+            newYear->peli.name = copyText(entry->name);
         }
         else //entry->type == SERIE8
         {
             newYear->cantSeries++;
             newYear->serie = *entry;
+            newYear->serie.name = copyText(entry->name);
         }
         newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
         newYear->tail = list;
         return newYear;
     }
-    if(list->year < entry->startYear) {
+    if(list->year > entry->startYear) {
         list->tail = createNewYear(list->tail, entry);
         return list;
     }
@@ -210,12 +213,15 @@ createNewYear(TYearL list, TEntry * entry)
 }
 
 static void updateExistingData(TYearL list, TEntry * entry) {
-    entry->type == PELI? list->cantPelis++ : list->cantSeries++;
+    if(entry->type == PELI)
+        list->cantPelis++;
+    else
+        list->cantSeries++;
     list->firstG = addGenres(list->firstG,entry->genre,entry->cantGenres);
 }
 
 static TYearL checkExisting(TYearL list, TEntry * entry) {
-    if (list == NULL || list->year > entry->startYear)
+    if (list == NULL || list->year < entry->startYear)
         return NULL;
 
     if (list->year == entry->startYear) {
@@ -227,10 +233,10 @@ static TYearL checkExisting(TYearL list, TEntry * entry) {
 }
 
 static void updateMostVoted(TYearL list, TEntry * entry) {
-    if( list == NULL || list->year > entry->startYear )
+    if( list == NULL || list->year < entry->startYear )
         return;
 
-    if(list->year < entry->startYear)
+    if(list->year > entry->startYear)
     {
         updateMostVoted(list->tail, entry);
         return;
@@ -239,6 +245,7 @@ static void updateMostVoted(TYearL list, TEntry * entry) {
     {
         if (entry->numVotes > list->peli.numVotes) {
             list->peli = *entry;
+            list->peli.name = copyText(entry->name);
             return;
         }
     }
@@ -246,6 +253,7 @@ static void updateMostVoted(TYearL list, TEntry * entry) {
     {
         if (entry->numVotes > list->serie.numVotes) {
             list->serie = *entry;
+            list->serie.name = copyText(entry->name);
             return;
         }
     }

@@ -12,8 +12,7 @@ createCSV(const char * fileName)
     if( fileName == NULL ) return NULL; // Error
 
     // Creamos el archivo para escritura, y cargamos los datos.
-    FILE * newFile = fopen(fileName, "wt");
-    fclose(newFile);
+    FILE * newFile = fopen(fileName, "w");
     return newFile;
 }
 
@@ -35,11 +34,12 @@ solveQuery2(imdbADT data, FILE * query2)
     char * genero;
 
     toBeginG(data);
-    while( nextG(data) )
+    do
     {
         getAmountG(data, &year, &genero, &cantPelis);
         fprintf(query2, "%d;%d;%s\n", year, cantPelis, genero);
     }
+    while( nextG(data) );
 }
 
 /* Carga los datos del query3 en su respectivo archivo */
@@ -60,15 +60,12 @@ solveQuery3(imdbADT data, FILE * query3)
  * - query2 : file en el que se vuelcan los datos respectivos al segundo query
  * - query3 : file en el que se vuelcan los datos respectivos al tercer query
 */
-static int
+static void
 loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
 {
-    fopen(FNAME_Q1, "at");
-    fputs("year;films;series", query1);
-    fopen(FNAME_Q2, "at");
-    fputs("year;genre;films", query2);
-    fopen(FNAME_Q3, "at");
-    fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie", query3);
+    fputs("year;films;series\n", query1);
+    fputs("year;genre;films\n", query2);
+    fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
     toBeginYear(data);
     while( nextYear(data) )
     {
