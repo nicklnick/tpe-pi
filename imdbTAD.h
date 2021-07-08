@@ -75,7 +75,7 @@ int nextG(imdbADT data);
 /* PRECONDICION: Haber llamado toBeginYear */
 /*
  * Funcion:     getAmountCurrY
- * Uso:         getAmountCurrY(imdb, &cantPelis, &cantSeries, &year);
+ * Uso:         getAmountCurrY(imdb, &year, &cantPelis, &cantSeries);
  * ----------------------------------------------------------------------
  * Descripcion: Obtiene la cantidad de peliculas y series que salieron en un año determinado
  * ----------------------------------------------------------------------
@@ -86,7 +86,7 @@ int nextG(imdbADT data);
  *                  - cantSeries : la cantidad de series del año year.
  *                  - year : año del que estamos sacando la informacion
  */
-void getAmountCurrY(imdbADT data, unsigned * cantPelis, unsigned * cantSeries, unsigned * year);
+void getAmountCurrY(imdbADT data, unsigned * year, unsigned * cantPelis, unsigned * cantSeries);
 
 /* PRECONDICION: Haber llamado toBeginYear */
 /*

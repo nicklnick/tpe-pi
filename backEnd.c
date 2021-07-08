@@ -22,7 +22,7 @@ solveQuery1(imdbADT data, FILE * query1)
 {
     unsigned year, cantPelis, cantSeries;
 
-    getAmountCurrY(data, &cantPelis, &cantSeries, &year);
+    getAmountCurrY(data, &year, &cantPelis, &cantSeries);
     fprintf(query1, "%d;%d;%d\n", year, cantPelis, cantSeries); // Para imprimir size_t tiene que ser %zu
 }
 

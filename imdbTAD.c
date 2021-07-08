@@ -102,7 +102,7 @@ void freeADT(imdbADT data) {
 
 //BACK
 
-void getAmountCurrY(imdbADT data, unsigned * cantPelis, unsigned * cantSeries, unsigned * year) {
+void getAmountCurrY(imdbADT data, unsigned * year, unsigned * cantPelis, unsigned * cantSeries) {
     *year = data->currentY->year;
     *cantPelis = data->currentY->cantPelis;
     *cantSeries = data->currentY->cantSeries;
