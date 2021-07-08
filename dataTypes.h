@@ -16,5 +16,8 @@ typedef struct TEntry {
 
 #define PELI 1
 #define SERIE 2
+#define NO_FIELD 0
+
+#define BLOCK 10
 
 #endif //TPE_FINAL_DATATYPES_H
