@@ -8,7 +8,38 @@
 #define FNAME_Q2 "query2.csv"
 #define FNAME_Q3 "query3.csv"
 
-/* Crea los archivos .csv de las 3 queries y carga en ellos los datos con loadData */
-void processData(imdbADT data);
+/*
+ * Funcion:     queryOne
+ * Uso:         query1 = queryOne();
+ * ----------------------------------------------------------------------
+ * Descripcion: Resuelve el primer query
+ * ----------------------------------------------------------------------
+ * Recibe:      Puntero a base de datos
+ * Devuelve:    Estructura con los datos necesarios para resolver el primer query
+ */
+TQuery1 solveQuery1(imdbADT data);
+
+/*
+ * Funcion:     queryTwo
+ * Uso:         query2 = queryTwo();
+ * ----------------------------------------------------------------------
+ * Descripcion: Resuelve el segundo query
+ * ----------------------------------------------------------------------
+ * Recibe:      Puntero a base de datos y flag que indica si hay genero siguiente en
+ *              el año que esta siendo consultado (genero ordenado ascendente)
+ * Devuelve:    Estructura con los datos necesarios para resolver el segundo query
+ */
+TQuery2 solveQuery2(imdbADT data, int * flag);
+
+/*
+ * Funcion:     queryThree
+ * Uso:         query3 = queryThree();
+ * ----------------------------------------------------------------------
+ * Descripcion: Resuelve el tercer query
+ * ----------------------------------------------------------------------
+ * Recibe:      Puntero a base de datos
+ * Devuelve:    Estructura con los datos necesarios para resolver el tercer query
+ */
+TQuery3 solveQuery3(imdbADT data);
 
 #endif //TPE_IMDB_BACKEND_H
