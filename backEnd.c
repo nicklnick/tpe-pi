@@ -61,6 +61,8 @@ solveQuery3(imdbADT data, FILE * query3)
                 peli->startYear, peli->name, peli->numVotes, peli->avgRating,
                 "\\N", "\\N", "\\N");
     }
+    free(peli);
+    free(serie);
 }
 
 /* Carga los datos en los archivos respectivos:

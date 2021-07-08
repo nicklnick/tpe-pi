@@ -78,8 +78,11 @@ freeADTYear(TYearL list)
     freeADTYear(list->tail);
     freeADTGenre(list->firstG);
 
-    free(list->peli.name);
-    free(list->serie.name);
+    if(list->peli.name != NULL)
+        free(list->peli.name);
+
+    if(list->serie.name != NULL)
+        free(list->serie.name);
 
     free(list);
 }
@@ -196,8 +199,10 @@ static TYearL createYear(TEntry * entry){
 }
 
 
-static void updateMostPolular(TYearL current, TEntry * entry){
-    if (entry->numVotes > current->peli.numVotes) {            //UPDATE MOST VOTED
+static void updateMostPolular(TYearL current, TEntry * entry){  //UPDATE MOST VOTED
+    if (entry->numVotes > current->peli.numVotes) {
+        if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
+            free(current->peli.name);
         current->peli = *entry;
         current->peli.name = copyText(entry->name);
         current->peli.genre = NULL;
@@ -205,6 +210,8 @@ static void updateMostPolular(TYearL current, TEntry * entry){
     else //entry->type == SERIE
     {
         if (entry->numVotes > current->serie.numVotes) {
+            if(current->serie.name != NULL)                 //Si se cambia el mostPopular, se tiene que liberar el anterior
+                free(current->serie.name);
             current->serie = *entry;
             current->serie.name = copyText(entry->name);
             current->serie.genre = NULL;
@@ -212,8 +219,8 @@ static void updateMostPolular(TYearL current, TEntry * entry){
     }
 }
 
-static void updateCant(TYearL current, TEntry * entry){
-    if(entry->type == PELI)                                 //UPDATE CANTIDADES
+static void updateCant(TYearL current, TEntry * entry){         //UPDATE CANTIDADES
+    if(entry->type == PELI)
         current->cantPelis++;
     else
         current->cantSeries++;
