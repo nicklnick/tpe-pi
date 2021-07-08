@@ -3,6 +3,7 @@
 //
 #include "backEnd.h"
 
+#define CHECK_SERIE()
 
 /* Crea un archivo "filename" */
 static FILE *
@@ -38,8 +39,7 @@ solveQuery2(imdbADT data, FILE * query2)
     {
         getAmountG(data, &year, &genero, &cantPelis);
         fprintf(query2, "%d;%d;%s\n", year, cantPelis, genero);
-    }
-    while( nextG(data) );
+    } while( nextG(data) );
 }
 
 /* Carga los datos del query3 en su respectivo archivo */
@@ -49,9 +49,18 @@ solveQuery3(imdbADT data, FILE * query3)
     TEntry * peli, * serie;
     peli = getMostPopular(data, PELI);
     serie = getMostPopular(data, SERIE);
-    fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
-            peli->startYear, peli->name, peli->numVotes, peli->avgRating,
-            serie->name, serie->numVotes, serie->avgRating);
+    if( serie != NULL )
+    {
+        fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
+                peli->startYear, peli->name, peli->numVotes, peli->avgRating,
+                serie->name, serie->numVotes, serie->avgRating);
+    }
+    else
+    {
+        fprintf(query3, "%d;%s;%d;%.2f;%s;%s;%s\n",
+                peli->startYear, peli->name, peli->numVotes, peli->avgRating,
+                "\\N", "\\N", "\\N");
+    }
 }
 
 /* Carga los datos en los archivos respectivos:
