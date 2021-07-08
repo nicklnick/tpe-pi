@@ -37,21 +37,6 @@ typedef struct imdbCDT {
     TYearL currentY;
 } imdbCDT;
 
-static char * copyText(const char * text){          // Copia hasta \0 o hasta el caracter c
-    int i;
-    char * new = NULL;
-
-    for( i = 0 ; text[i]!=0 ; i++ )
-    {
-        if( i % BLOCK == 0 )
-            new = realloc(new, (i+BLOCK)*sizeof(char));
-        new[i] = text[i];
-    }
-
-    new = realloc(new, (i+1) * sizeof(char));
-    new[i] = 0;
-    return new;
-}
 
 
 imdbADT newDataBase(){
@@ -161,7 +146,7 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres)
     if( list == NULL || (c =strcmp(list->genre, *genres)) > 0 )
     {
         TGenreL newGenre = malloc(sizeof(TGenre));
-        newGenre->genre = copyText(*genres);
+        newGenre->genre = copyText(*genres,EMPTY);
         newGenre->cant = 1;
         newGenre->tail = addGenres(list, genres + 1, cantGenres - 1);
         return newGenre;
@@ -185,26 +170,26 @@ static TYearL createYear(TEntry * entry){
         newYear->cantPelis++;
         newYear->peli = *entry;
         newYear->peli.genre = NULL;
-        newYear->peli.name = copyText(entry->name);
+        newYear->peli.name = copyText(entry->name,EMPTY);
     }
     else //entry->type == SERIE
     {
         newYear->cantSeries++;
         newYear->serie = *entry;
         newYear->serie.genre = NULL;
-        newYear->serie.name = copyText(entry->name);
+        newYear->serie.name = copyText(entry->name,EMPTY);
     }
     newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
     return newYear;
 }
 
 
-static void updateMostPolular(TYearL current, TEntry * entry){  //UPDATE MOST VOTED
+static void updateMostPopular(TYearL current, TEntry * entry){  //UPDATE MOST VOTED
     if (entry->numVotes > current->peli.numVotes) {
         if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
             free(current->peli.name);
         current->peli = *entry;
-        current->peli.name = copyText(entry->name);
+        current->peli.name = copyText(entry->name,EMPTY);
         current->peli.genre = NULL;
     }
     else //entry->type == SERIE
@@ -213,7 +198,7 @@ static void updateMostPolular(TYearL current, TEntry * entry){  //UPDATE MOST VO
             if(current->serie.name != NULL)                 //Si se cambia el mostPopular, se tiene que liberar el anterior
                 free(current->serie.name);
             current->serie = *entry;
-            current->serie.name = copyText(entry->name);
+            current->serie.name = copyText(entry->name,EMPTY);
             current->serie.genre = NULL;
         }
     }
@@ -255,7 +240,7 @@ static TYearL updateYear(TYearL firstYear, TEntry * entry){
             current = current->tail;
         }
         else{                                                       //CASO YA EXISTE
-            updateMostPolular(current, entry);
+            updateMostPopular(current, entry);
             updateCant(current, entry);
             flag=1;
         }

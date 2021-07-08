@@ -26,23 +26,6 @@
 };
 
 
-
-static char * copyText(const char * text, char c){          // Copia hasta \0 o hasta el caracter c
-    int i;
-    char * new = NULL;
-
-    for(i=0; text[i]!=0 && text[i]!=c; i++){
-        if(i%BLOCK==0){
-            new = realloc(new, (i+BLOCK)*sizeof(char));
-        }
-        new[i] = text[i];
-    }
-
-    new = realloc(new, (i+1)*sizeof(char));
-    new[i]=0;
-    return new;
-}
-
 static char ** loadGenres(char * line, unsigned * cant){
     int size, dim, i;
     char ** genres = NULL;
