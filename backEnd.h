@@ -17,7 +17,7 @@
  * Recibe:      Puntero a base de datos
  * Devuelve:    Estructura con los datos necesarios para resolver el primer query
  */
-TQuery1 solveQuery1(imdbADT data);
+TQuery1 queryOne(imdbADT data);
 
 /*
  * Funcion:     queryTwo
@@ -29,7 +29,7 @@ TQuery1 solveQuery1(imdbADT data);
  *              el año que esta siendo consultado (genero ordenado ascendente)
  * Devuelve:    Estructura con los datos necesarios para resolver el segundo query
  */
-TQuery2 solveQuery2(imdbADT data, int * flag);
+TQuery2 queryTwo(imdbADT data, int * flag);
 
 /*
  * Funcion:     queryThree
@@ -40,6 +40,6 @@ TQuery2 solveQuery2(imdbADT data, int * flag);
  * Recibe:      Puntero a base de datos
  * Devuelve:    Estructura con los datos necesarios para resolver el tercer query
  */
-TQuery3 solveQuery3(imdbADT data);
+TQuery3 queryThree(imdbADT data);
 
 #endif //TPE_IMDB_BACKEND_H
