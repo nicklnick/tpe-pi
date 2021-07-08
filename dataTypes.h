@@ -2,6 +2,8 @@
 #ifndef TPE_FINAL_DATATYPES_H
 #define TPE_FINAL_DATATYPES_H
 
+#include <stdlib.h>
+
 typedef struct TEntry {
     char * name;  // Nombre de la serie o pelicula
     char type;    // Serie = SERIE y Peli = PELI

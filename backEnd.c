@@ -35,11 +35,12 @@ solveQuery2(imdbADT data, FILE * query2)
     char * genero;
 
     toBeginG(data);
-    do
+    while(hasNextG(data))
     {
         getAmountG(data, &year, &genero, &cantPelis);
         fprintf(query2, "%d;%d;%s\n", year, cantPelis, genero);
-    } while( nextG(data) );
+        nextG(data);
+    }
 }
 
 /* Carga los datos del query3 en su respectivo archivo */
@@ -78,11 +79,12 @@ loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fputs("year;genre;films\n", query2);
     fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
     toBeginYear(data);
-    while( nextYear(data) )
+    while(  hasNextYear(data) )
     {
         solveQuery1(data, query1);
         solveQuery2(data, query2);
         solveQuery3(data, query3);
+        nextYear(data);
     }
     fclose(query3);
     fclose(query2);

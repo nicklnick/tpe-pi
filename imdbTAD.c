@@ -109,15 +109,14 @@ void toBeginYear(imdbADT data) {
 }
 
 int hasNextYear(imdbADT data) {
-    return data->currentY->tail != NULL;
+    return data->currentY != NULL;
 }
 
-int nextYear(imdbADT data) {
+void nextYear(imdbADT data) {
     if( hasNextYear(data) == 0 )
-        return 0;
+        return;
 
     data->currentY = data->currentY->tail;
-    return 1;
 }
 
 void toBeginG(imdbADT data) {
@@ -125,15 +124,14 @@ void toBeginG(imdbADT data) {
 }
 
 int hasNextG(imdbADT data) {
-    return data->currentY->currentG->tail != NULL;
+    return data->currentY->currentG != NULL;
 }
 
-int nextG(imdbADT data){
+void nextG(imdbADT data){
     if( hasNextG(data) == 0 )
-        return 0;
+        return;
 
     data->currentY->currentG = data->currentY->currentG->tail;
-    return 1;
 }
 
 //FRONT

@@ -54,7 +54,7 @@ int hasNextYear(imdbADT data);
  * - Retorna 1 si pudo mover el iterador al año siguiente.
  * - En cualquier otro caso, retorna 0.
  */
-int nextYear(imdbADT data);
+void nextYear(imdbADT data);
 
 
 /*
@@ -69,7 +69,7 @@ int hasNextG(imdbADT data);
  * - Retorna 1 si pudo mover el iterador al genero siguiente.
  * - En cualquier otro caso, retorna 0.
  */
-int nextG(imdbADT data);
+void nextG(imdbADT data);
 
 
 /* PRECONDICION: Haber llamado toBeginYear */
