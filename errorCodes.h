@@ -13,7 +13,7 @@
 
 /* No hay suficiente espacio en memoria */
 #define NO_MEM(error)  {  if( errno == ENOMEM )      \
-                             *error = INSUFFICIENT_MEM;           \
+                             error = INSUFFICIENT_MEM;           \
                        };
 
 /* Hubo error al manipular el file */

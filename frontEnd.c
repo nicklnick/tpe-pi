@@ -35,7 +35,7 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
         if(size%BLOCK==0)
         {
             genres = realloc(aux, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
-            NO_MEM(error)
+            NO_MEM(*error)
             RETURN_IF_ERROR(*error, aux)
             aux = genres;
             size += BLOCK;
@@ -114,7 +114,7 @@ int readFile(imdbADT data, char * fileName){
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
     TEntry * entry = malloc(sizeof(TEntry));                                            //!!!!!!!!
-    NO_MEM(&error)
+    NO_MEM(error)
     FREE_ADT(error, data)
     RETURN_IF_ERROR(error, INSUFFICIENT_MEM)
 

@@ -44,7 +44,7 @@ imdbADT newDataBase(int * error){
     imdbADT new = calloc(1, sizeof(imdbCDT));
 
     //!!!!!!!!!!!
-    NO_MEM(error)
+    NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
     return new;
@@ -106,7 +106,7 @@ TEntry *
 getMostPopular(imdbADT data, char type, int * error)
 {
     TEntry * mostVoted = malloc(sizeof(TEntry));
-    NO_MEM(error)
+    NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
     if( type == PELI )
@@ -156,7 +156,7 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres, int * error)
     if( list == NULL || (c =strcmp(list->genre, *genres)) > 0 )
     {
         TGenreL newGenre = malloc(sizeof(TGenre));
-        NO_MEM(error)
+        NO_MEM(*error)
         RETURN_IF_ERROR(*error, NULL)
 
         newGenre->genre = copyText(*genres,EMPTY);   // !!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -179,7 +179,7 @@ static TYearL
 createYear(TEntry * entry, int * error)
 {
     TYearL newYear = calloc(1, sizeof(TYear));
-    NO_MEM(error)
+    NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
     newYear->year = entry->startYear;
