@@ -35,9 +35,11 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
     {
         if(size%BLOCK==0)
         {
+            /* Se tiene que actualizar por si hay corte por falta de memoria */
+            /* asi puede liberar los generos que si se pudieron alocar.      */
             genres = realloc(aux, (size + BLOCK) * sizeof(char *));
-            *cant = dim;                     /* Se tiene que actualizar por si hay corte por falta de memoria */
-            NO_MEM(*error)              /* asi puede liberar los generos que si se pudieron alocar.      */
+            *cant = dim;
+            NO_MEM(*error)
             RETURN_IF_ERROR(*error, aux)
             aux = genres;
             size += BLOCK;
@@ -58,7 +60,7 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
 }
 
 /* Se asume que atoi y atof no van a dar valores inesperados, pues cliente asegura que  */
-/* la entrada (imdbv3.csv), es correcta                                                 */
+/* la entrada (imdbv3.csv), es correcta.                                                */
 
 static int updateEntry(TEntry * entry, char * line, int * error)
 {
@@ -144,7 +146,7 @@ void readFile(imdbADT data, char * fileName){
 
             // Si hubo error liberamos el adt y cortamos el programa
             FREE_ADT(error, data)
-            ABORT_IF_ERROR(error, MSG_MEM)              //!!!!!!!!!!!!!! no liberamos entry
+            ABORT_IF_ERROR(error, MSG_MEM)
             freeResources(entry);
         }
         else
@@ -161,10 +163,6 @@ void readFile(imdbADT data, char * fileName){
 static FILE *
 createCSV(const char * fileName)
 {
-    // Si no me pasan el nombre del archivo
-    if( fileName == NULL )                      //!!!!!!!!!!!!!!!!!!! y despues que hacemos??
-        return NULL; // Error
-
     // Creamos el archivo para escritura, y cargamos los datos.
     FILE * newFile = fopen(fileName, "w");
     return newFile;
@@ -211,9 +209,9 @@ loadQuery3(TQuery3 data, FILE * query3, int * error)
 static void
 writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
 {
-    fputs("year;films;series\n", query1);                           //!!!!!!!!!!!!!!!!!!! constante?
-    fputs("year;genre;films\n", query2);
-    fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
+    fputs(HEADER_Q1, query1);
+    fputs(HEADER_Q2, query2);
+    fputs(HEADER_Q3, query3);
     int hasNextGenre=1, error = OK;
 
     toBeginYear(data);                      // Empieza el iterador de los años
