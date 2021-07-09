@@ -7,13 +7,14 @@
 
 #include <errno.h>
 
+#define ERROR_DE_ARGS 20
 #define INSUFFICIENT_MEM 10
 #define ERROR_DE_FILE 5
 #define INVALID_YEAR 3
 
 /* No hay suficiente espacio en memoria */
 #define NO_MEM(error)  {  if( errno == ENOMEM )      \
-                             error = INSUFFICIENT_MEM;           \
+                             (error) = INSUFFICIENT_MEM;           \
                        };
 
 /* Hubo error al manipular el file */
