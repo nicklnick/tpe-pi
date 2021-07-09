@@ -5,6 +5,18 @@
 #include "dataTypes.h"
 #include "imdbTAD.h"
 
+/* Headers de los csv */
+#define HEADER_Q1 "year;films;series\n"
+#define HEADER_Q2 "year;genre;films\n"
+#define HEADER_Q3 "startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n"
+
+
+/* Nombres de los archivos a crear */
+#define FNAME_Q1 "query1.csv"
+#define FNAME_Q2 "query2.csv"
+#define FNAME_Q3 "query3.csv"
+
+
 /*
  * Funcion:     readFile
  * Uso:         c = readFile(fileName, data);
