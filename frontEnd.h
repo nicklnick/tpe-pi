@@ -14,7 +14,7 @@
  * Recibe:      Puntero a estructura de datos, y nombre del archivo a leer
  * Devuelve:    Devuelve flag prendido si tuvo error al abrir el file
  */
-int readFile(imdbADT data, char * fileName);
+void readFile(imdbADT data, char * fileName);
 
 /*
  * Funcion:     writeData

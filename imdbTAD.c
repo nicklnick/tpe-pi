@@ -42,7 +42,6 @@ typedef struct imdbCDT {
 imdbADT newDataBase(int * error){
     imdbADT new = calloc(1, sizeof(imdbCDT));
 
-    //!!!!!!!!!!!
     NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
@@ -81,7 +80,7 @@ freeADTYear(TYearL list)
 
 void freeADT(imdbADT data) {
     if( data == NULL )
-        return;   //!!!!!!!!!!!!!!!!!!
+        return;
 
     freeADTYear(data->firstY);
     free(data);

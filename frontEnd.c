@@ -113,18 +113,19 @@ freeResources(TEntry * entry)
 }
 
 
-int readFile(imdbADT data, char * fileName){
+void readFile(imdbADT data, char * fileName){
     int error = OK; // Lo inicializamos con que esta ok, por ende no hay errores
     FILE * imdbFile;
     imdbFile = fopen(fileName, "r");
-    FILE_ERROR(imdbFile, ERROR_DE_FILE);
+    ABORT_IF_ERROR(error, MSG_FILE)
 
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
     TEntry * entry = malloc(sizeof(TEntry));
     NO_MEM(error)
     FREE_ADT(error, data)
-    RETURN_IF_ERROR(error, INSUFFICIENT_MEM)
+    ABORT_IF_ERROR(error, MSG_MEM)
+
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
@@ -134,6 +135,7 @@ int readFile(imdbADT data, char * fileName){
 
             // Si hubo error liberamos el adt y cortamos el programa
             FREE_ADT(error, data)
+            ABORT_IF_ERROR(error, MSG_MEM)
             freeResources(entry);
         }
         else
@@ -145,7 +147,6 @@ int readFile(imdbADT data, char * fileName){
 
     free(entry);
     fclose(imdbFile);       // Cierre final del file
-    return OK;
 }
 
 static FILE *
@@ -211,7 +212,7 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
 
         TQuery3 aux = queryThree(data, &error);
         loadQuery3(aux, query3, &error);
-        RETURN_IF_ERROR(error,)
+        ABORT_IF_ERROR(error, MSG_MEM)
 
         hasNextGenre = 1;
         nextYear(data);

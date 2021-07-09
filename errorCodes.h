@@ -7,10 +7,13 @@
 
 #include <errno.h>
 
+#define OK 0
 #define ERROR_DE_ARGS 20
 #define INSUFFICIENT_MEM 10
 #define ERROR_DE_FILE 5
 #define INVALID_YEAR 3
+#define MSG_MEM "Cantidad de memoria insuficiente"
+#define MSG_FILE "File no existente"
 
 /* No hay suficiente espacio en memoria */
 #define NO_MEM(error)  {  if( errno == ENOMEM )      \
@@ -23,12 +26,19 @@
                                     };
 
 /* Sale de la funcion si hubieron errores */
-#define RETURN_IF_ERROR(error, retValue) { if( (error) != 0 )          \
+#define RETURN_IF_ERROR(error, retValue) { if( (error) != OK )          \
                                             return retValue; \
                                          };
 
-#define FREE_ADT(error, data) { if( (error) != 0 )      \
+#define FREE_ADT(error, data) { if( (error) != OK )      \
                                   freeADT(data); \
                               };
+
+#define ABORT_IF_ERROR(error, errorMsg) { if( (error) != OK ) {     \
+                                  fprintf(stderr, errorMsg);       \
+                                  exit(error);                     \
+                                  }                                 \
+                              };
+
 
 #endif //TPE_IMDB_ERRORCODES_H
