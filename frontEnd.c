@@ -176,13 +176,13 @@ loadQuery3(TQuery3 data, FILE * query3, int * error)
     if(*error==OK){
         if( data.serie->name != NULL )
         {
-            fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
+            fprintf(query3, "%d;%s;%d;%.1f;%s;%d;%.1f\n",
                     data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
                     data.serie->name, data.serie->numVotes, data.serie->avgRating);
         }
         else
         {
-            fprintf(query3, "%d;%s;%d;%.2f;%s\n",
+            fprintf(query3, "%d;%s;%d;%.1f;%s\n",
                     data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
                     "No hay serie.");
         }
@@ -199,7 +199,7 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fputs("year;films;series\n", query1);
     fputs("year;genre;films\n", query2);
     fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
-    int flag=1, error = OK;
+    int hasNextGenre=1, error = OK;
     toBeginYear(data);
     while( hasNextYear(data))
     {

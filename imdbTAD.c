@@ -209,14 +209,17 @@ createYear(TEntry * entry, int * error)
 static void
 updateMostPopular(TYearL current, TEntry * entry, int * error)
 {
-    if (entry->numVotes > current->peli.numVotes)
+    if( entry->type == PELI )
     {
-        if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
-            free(current->peli.name);
-        current->peli = *entry;
-        current->peli.genre = NULL;
-        current->peli.name = copyText(entry->name,EMPTY, error);
-        RETURN_IF_ERROR(*error,)
+        if (entry->numVotes > current->peli.numVotes)
+        {
+            if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
+                free(current->peli.name);
+            current->peli = *entry;
+            current->peli.genre = NULL;
+            current->peli.name = copyText(entry->name,EMPTY, error);
+            RETURN_IF_ERROR(*error,)
+        }
     }
     else //entry->type == SERIE
     {
