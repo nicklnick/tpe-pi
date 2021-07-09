@@ -6,6 +6,7 @@
 #include "imdbTAD.h"
 #include "dataTypes.h"
 #include "backEnd.h"
+#include "errorCodes.h"
 
 #define LINE_MAX 400
 
@@ -13,9 +14,6 @@
 #define SEPARADOR_2 ','
 
 #define OK 0
-#define ERROR_DE_FILE 5
-#define INVALID_YEAR 3
-
 #define EMPTY_FIELD "\\N"
 
 #define UPDATE_TOKEN token = strtok(NULL, SEPARADOR);
@@ -27,13 +25,15 @@
 };
 
 
-static char ** loadGenres(char * line, unsigned * cant){
+static char ** loadGenres(char * line, unsigned * cant)
+{
     int size, dim, i;
     char ** genres = NULL;
 
-    for(i=0, size=0, dim=0; line[i]!=0; ){
-
-        if(size%BLOCK==0) {
+    for(i=0, size=0, dim=0; line[i]!=0; )
+    {
+        if(size%BLOCK==0)
+        {
             genres = realloc(genres, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
             size += BLOCK;
         }
@@ -50,7 +50,7 @@ static char ** loadGenres(char * line, unsigned * cant){
 }
 
 
-static int updateEntry(TEntry * entry, char * line){
+static int updateEntry(TEntry * entry, char * line, int * error){
     char * token = strtok(line, SEPARADOR);
 
     if(!strcmp(token, "movie"))      // Tipo de entry
@@ -99,22 +99,26 @@ static void freeResources(TEntry * entry){
 
 
 int readFile(imdbADT data, char * fileName){
+    int error = OK; // Lo inicializamos con que esta ok, por ende no hay errores
     FILE * imdbFile;
     imdbFile = fopen(fileName, "r");
-
-    if(imdbFile == NULL){
-        return ERROR_DE_FILE;
-    }
+    FILE_ERROR(imdbFile, ERROR_DE_FILE);
 
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
     TEntry * entry = malloc(sizeof(TEntry));                                            //!!!!!!!!
+    NO_MEM(&error);
+    FREE_ADT(error, data);
+    RETURN_IF_ERROR(error, INSUFFICIENT_MEM);
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
-    while(fgets(line, sizeof(line), imdbFile)) {
-        if(updateEntry(entry, line)!=INVALID_YEAR){
-            updateData(data, entry);                    // Solo si el entry es valido se actualiza el ADT
+    while( !error && fgets(line, sizeof(line), imdbFile) ) {
+        if(updateEntry(entry, line, &error)!=INVALID_YEAR){
+            updateData(data, entry, &error);                    // Solo si el entry es valido se actualiza el ADT
+
+            // Si hubo error liberamos el adt y cortamos el programa
+            FREE_ADT(error, data)
             freeResources(entry);
         }
         else{
@@ -175,7 +179,7 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fputs("year;films;series\n", query1);
     fputs("year;genre;films\n", query2);
     fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
-    int flag=1;
+    int flag=1, error = OK;
     toBeginYear(data);
     while( hasNextYear(data))
     {
@@ -186,7 +190,7 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
             loadQuery2(queryTwo(data,&flag), query2);
         }
 
-        loadQuery3(queryThree(data), query3);
+        loadQuery3(queryThree(data, &error), query3);
 
         flag=1;
         nextYear(data);

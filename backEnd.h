@@ -38,8 +38,9 @@ TQuery2 queryTwo(imdbADT data, int * flag);
  * Descripcion: Resuelve el tercer query
  * ----------------------------------------------------------------------
  * Recibe:      Puntero a base de datos
+ *              y puntero a zona donde hay un flag de error
  * Devuelve:    Estructura con los datos necesarios para resolver el tercer query
  */
-TQuery3 queryThree(imdbADT data);
+TQuery3 queryThree(imdbADT data, int * error);
 
 #endif //TPE_IMDB_BACKEND_H

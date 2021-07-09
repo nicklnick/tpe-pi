@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "errorCodes.h"
 #include "dataTypes.h"
 #include "imdbTAD.h"
 
@@ -39,8 +40,14 @@ typedef struct imdbCDT {
 
 
 
-imdbADT newDataBase(){
-    return calloc(1, sizeof(imdbCDT));
+imdbADT newDataBase(int * error){
+    imdbADT new = calloc(1, sizeof(imdbCDT));
+
+    //!!!!!!!!!!!
+    NO_MEM(error);
+    RETURN_IF_ERROR(error, NULL);
+
+    return new;
 }
 
 static void
@@ -73,6 +80,9 @@ freeADTYear(TYearL list)
 }
 
 void freeADT(imdbADT data) {
+    if( data == NULL )
+        return;   //!!!!!!!!!!!!!!!!!!
+
     freeADTYear(data->firstY);
     free(data);
 }
@@ -93,9 +103,11 @@ void getAmountG(imdbADT data, unsigned * year, char ** genero, unsigned * cantPe
 }
 
 TEntry *
-getMostPopular(imdbADT data, char type)
+getMostPopular(imdbADT data, char type, int * error)
 {
     TEntry * mostVoted = malloc(sizeof(TEntry));
+    NO_MEM(error);
+    RETURN_IF_ERROR(error, NULL);
 
     if( type == PELI )
         *mostVoted = data->currentY->peli;
@@ -136,7 +148,7 @@ void nextG(imdbADT data){
 
 //FRONT
 static TGenreL
-addGenres(TGenreL list, char ** genres, unsigned cantGenres)
+addGenres(TGenreL list, char ** genres, unsigned cantGenres, int * error)
 {
     int c;
     if( !cantGenres )
@@ -144,24 +156,32 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres)
     if( list == NULL || (c =strcmp(list->genre, *genres)) > 0 )
     {
         TGenreL newGenre = malloc(sizeof(TGenre));
-        newGenre->genre = copyText(*genres,EMPTY);
+        NO_MEM(error);
+        RETURN_IF_ERROR(error, NULL);
+
+        newGenre->genre = copyText(*genres,EMPTY);   // !!!!!!!!!!!!!!!!!!!!!!!!!!
         newGenre->cant = 1;
-        newGenre->tail = addGenres(list, genres + 1, cantGenres - 1);
+        newGenre->tail = addGenres(list, genres + 1, cantGenres - 1, error);
         return newGenre;
     }
     else if( c == 0 )
     {
         list->cant++;
-        list->tail = addGenres(list->tail, genres + 1, cantGenres - 1);
+        list->tail = addGenres(list->tail, genres + 1, cantGenres - 1, error);
         return list;
     }
-    list->tail = addGenres(list->tail, genres,  cantGenres);
+    list->tail = addGenres(list->tail, genres,  cantGenres, error);
     return list;
 }
 
 
-static TYearL createYear(TEntry * entry){
+static TYearL
+createYear(TEntry * entry, int * error)
+{
     TYearL newYear = calloc(1, sizeof(TYear));
+    NO_MEM(error);
+    RETURN_IF_ERROR(error, NULL);
+
     newYear->year = entry->startYear;
     if (entry->type == PELI)
     {
@@ -177,13 +197,16 @@ static TYearL createYear(TEntry * entry){
         newYear->serie.genre = NULL;
         newYear->serie.name = copyText(entry->name,EMPTY);
     }
-    newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres);
+    newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres, error);
     return newYear;
 }
 
-
-static void updateMostPopular(TYearL current, TEntry * entry){  //UPDATE MOST VOTED
-    if (entry->numVotes > current->peli.numVotes) {
+//UPDATE MOST VOTED
+static void
+updateMostPopular(TYearL current, TEntry * entry)
+{
+    if (entry->numVotes > current->peli.numVotes)
+    {
         if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
             free(current->peli.name);
         current->peli = *entry;
@@ -202,51 +225,69 @@ static void updateMostPopular(TYearL current, TEntry * entry){  //UPDATE MOST VO
     }
 }
 
-static void updateCant(TYearL current, TEntry * entry){         //UPDATE CANTIDADES
+// UPDATE CANTIDADES
+static void updateCant(TYearL current, TEntry * entry, int * error)
+{
     if(entry->type == PELI)
         current->cantPelis++;
     else
         current->cantSeries++;
-    current->firstG = addGenres(current->firstG,entry->genre,entry->cantGenres);
+
+    current->firstG = addGenres(current->firstG,entry->genre,entry->cantGenres, error);
+    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
 }
 
 
-static TYearL updateYear(TYearL firstYear, TEntry * entry){
-
-   if(firstYear==NULL){                                    //CASO PRIMER ANIO
-        TYearL newYear = createYear(entry);
+static TYearL
+updateYear(TYearL firstYear, TEntry * entry, int * error)
+{
+    //CASO PRIMER ANIO
+   if( firstYear == NULL )
+   {
+        TYearL newYear = createYear(entry, error);
         return newYear;
     }
 
     TYearL current = firstYear;
     TYearL prev = NULL;
-    int flag=0;
+    int updatedList = 0;
 
-    while(!flag){
-        if(current == NULL || current->year < entry->startYear){          //CASO NO EXISTE
-            TYearL newYear = createYear(entry);
+    while( !updatedList )
+    {
+        //CASO NO EXISTE
+        if( current == NULL || current->year < entry->startYear )
+        {
+            TYearL newYear = createYear(entry, error);
+            RETURN_IF_ERROR(error, newYear);
+
             newYear->tail = current;
-
-            if(prev==NULL)                                              //CASO REMPLAZAR EL PRIMER ANIO
+            //CASO REMPLAZAR EL PRIMER ANIO
+            if( prev == NULL )
                 return newYear;
 
             prev->tail = newYear;
-            flag=1;
+            updatedList = 1;
         }
-        else if(current->year > entry->startYear){                       //CASO SIGUE BUSCANDO
+        //CASO SIGUE BUSCANDO
+        else if(current->year > entry->startYear)
+        {
             prev = current;
             current = current->tail;
         }
-        else{                                                       //CASO YA EXISTE
+        //CASO YA EXISTE
+        else
+        {
             updateMostPopular(current, entry);
-            updateCant(current, entry);
-            flag=1;
+            updateCant(current, entry, error);
+            updatedList = 1;
+            // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
         }
     }
 
     return firstYear;
 }
 
-void updateData(imdbADT data, TEntry * entry){
-    data->firstY = updateYear(data->firstY, entry);
+void updateData(imdbADT data, TEntry * entry, int * error) {
+    data->firstY = updateYear(data->firstY, entry, error);
+    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
 }

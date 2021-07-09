@@ -38,13 +38,13 @@ queryTwo(imdbADT data, int * flag)
 
 /* Carga los datos del query3 en su respectivo archivo */
 TQuery3
-queryThree(imdbADT data)
+queryThree(imdbADT data, int * error)
 {
     TEntry * peli, * serie;
     TQuery3 out;
 
-    peli = getMostPopular(data, PELI);
-    serie = getMostPopular(data, SERIE);
+    peli = getMostPopular(data, PELI, error);
+    serie = getMostPopular(data, SERIE, error);
 
     out.peli = peli;
     out.serie = serie;
