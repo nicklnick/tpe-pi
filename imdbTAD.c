@@ -183,16 +183,21 @@ static TYearL createYear(TEntry * entry){
 
 
 static void updateMostPopular(TYearL current, TEntry * entry){  //UPDATE MOST VOTED
-    if (entry->numVotes > current->peli.numVotes) {
-        if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
-            free(current->peli.name);
-        current->peli = *entry;
-        current->peli.name = copyText(entry->name,EMPTY);
-        current->peli.genre = NULL;
+    if(entry->type == PELI)
+    {
+        if (entry->numVotes > current->peli.numVotes)
+        {
+            if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
+                free(current->peli.name);
+            current->peli = *entry;
+            current->peli.name = copyText(entry->name,EMPTY);
+            current->peli.genre = NULL;
+        }
     }
     else //entry->type == SERIE
     {
-        if (entry->numVotes > current->serie.numVotes) {
+        if (entry->numVotes > current->serie.numVotes)
+        {
             if(current->serie.name != NULL)                 //Si se cambia el mostPopular, se tiene que liberar el anterior
                 free(current->serie.name);
             current->serie = *entry;
