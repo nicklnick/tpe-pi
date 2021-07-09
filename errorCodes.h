@@ -17,16 +17,16 @@
                        };
 
 /* Hubo error al manipular el file */
-#define FILE_ERROR(file, retValue)  {  if( file == NULL )      \
+#define FILE_ERROR(file, retValue)  {  if( (file) == NULL )      \
                                             return retValue;       \
                                     };
 
 /* Sale de la funcion si hubieron errores */
-#define RETURN_IF_ERROR(error, retValue) { if( error )          \
-                                            return retValue; \
+#define RETURN_IF_ERROR(error, retValue) { if( (error) != 0 )          \
+                                            return (retValue); \
                                          };
 
-#define FREE_ADT(error, data) { if( error )      \
+#define FREE_ADT(error, data) { if( (error) != 0 )      \
                                   freeADT(data); \
                               };
 

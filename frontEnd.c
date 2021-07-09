@@ -25,16 +25,19 @@
 };
 
 
-static char ** loadGenres(char * line, unsigned * cant)
+static char ** loadGenres(char * line, unsigned * cant, int * error)
 {
     int size, dim, i;
-    char ** genres = NULL;
+    char ** genres = NULL, ** aux = NULL;
 
     for(i=0, size=0, dim=0; line[i]!=0; )
     {
         if(size%BLOCK==0)
         {
-            genres = realloc(genres, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
+            genres = realloc(aux, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
+            NO_MEM(error)
+            RETURN_IF_ERROR(*error, aux)
+            aux = genres;
             size += BLOCK;
         }
         genres[dim++] = copyText(line + i, SEPARADOR_2);        // + i cantidad de offset
@@ -44,6 +47,7 @@ static char ** loadGenres(char * line, unsigned * cant)
             i++;
         }
     }
+    // Este realloc nunca deberia tirar error porque "corta" lo que sobra
     genres = realloc(genres, dim*sizeof(char *));                                  //!!!!!!!!
     *cant = dim;
     return genres;
@@ -72,7 +76,7 @@ static int updateEntry(TEntry * entry, char * line, int * error){
 
     UPDATE_TOKEN
     unsigned cant;
-    entry->genre = loadGenres(token, &cant);        // Carga los generos en la lista
+    entry->genre = loadGenres(token, &cant, error);        // Carga los generos en la lista
     entry->cantGenres = cant;
 
     UPDATE_TOKEN
@@ -91,10 +95,13 @@ static void freeResources(TEntry * entry){
     if(entry==NULL)
         return;
     free(entry->name);
-    for(int i=0; i<entry->cantGenres; i++){
-        free(entry->genre[i]);
+    // Si no hubo problemas con memoria
+    if( entry->genre != NULL )
+    {
+        for(int i=0; i<entry->cantGenres; i++)
+            free(entry->genre[i]);
+        free(entry->genre);
     }
-    free(entry->genre);
 }
 
 
@@ -107,9 +114,9 @@ int readFile(imdbADT data, char * fileName){
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
     TEntry * entry = malloc(sizeof(TEntry));                                            //!!!!!!!!
-    NO_MEM(&error);
-    FREE_ADT(error, data);
-    RETURN_IF_ERROR(error, INSUFFICIENT_MEM);
+    NO_MEM(&error)
+    FREE_ADT(error, data)
+    RETURN_IF_ERROR(error, INSUFFICIENT_MEM)
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 

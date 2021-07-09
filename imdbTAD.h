@@ -16,7 +16,7 @@ typedef struct imdbCDT * imdbADT;
  * Recibe:      VOID
  * Devuelve:    Puntero a Base de Datos
  */
-imdbADT newDataBase();
+imdbADT newDataBase(int * error);
 
 /*
  * Funcion:     freeADT
