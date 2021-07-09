@@ -153,7 +153,7 @@ loadQuery2( TQuery2 data, FILE * query2)
 static void
 loadQuery3(TQuery3 data, FILE * query3)
 {
-    if( data.serie != NULL )
+    if( data.serie->name != NULL )
     {
         fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
                 data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
