@@ -130,7 +130,7 @@ freeResources(TEntry * entry)
 
 
 void
-readFile(imdbADT data, char * fileName)
+readFile(imdbADT data, const char * fileName)
 {
     int error = OK;                         // Lo inicializamos con que esta ok, por ende no hay errores
 
