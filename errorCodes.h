@@ -15,6 +15,7 @@
 /* Mensajes de error */
 #define MSG_MEM "Cantidad de memoria insuficiente"
 #define MSG_FILE "File no existente"
+#define MSG_ARG "Cantidad de argumentos incorrecta"
 
 /* Codigos de error */
 #define ERROR_DE_ARGS 20

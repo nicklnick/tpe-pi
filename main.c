@@ -16,17 +16,17 @@ main(int argc, char * argv[])
 {
     if( argc != 2 )
     {
-        fprintf(stderr, "Cantidad de argumentos incorrecta");
+        fprintf(stderr, MSG_ARG);
         exit(ERROR_DE_ARGS);//Aborta porque no recibe un argumento
     }
 
-    int flag = 0;
+    int flag = OK;
 
     imdbADT data = newDataBase(&flag);
 
     if( flag == INSUFFICIENT_MEM )
     {
-        fprintf(stderr, "Cantidad de memoria insuficiente");
+        fprintf(stderr, MSG_MEM);
         exit(INSUFFICIENT_MEM);
     }
 
