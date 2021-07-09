@@ -5,6 +5,7 @@
 #include "frontEnd.h"
 #include "imdbTAD.h"
 #include "dataTypes.h"
+#include "backEnd.h"
 
 #define LINE_MAX 400
 
@@ -124,4 +125,87 @@ int readFile(char fileName[], imdbADT data){
     free(entry);
     fclose(imdbFile);       // Cierre final del file
     return OK;
+}
+
+static FILE *
+createCSV(const char * fileName)
+{
+    // Si no me pasan el nombre del archivo
+    if( fileName == NULL ) return NULL; // Error
+
+    // Creamos el archivo para escritura, y cargamos los datos.
+    FILE * newFile = fopen(fileName, "w");
+    return newFile;
+}
+
+static void
+loadQuery1( TQuery1 data, FILE * query1)
+{
+    fprintf(query1, "%d;%d;%d\n", data.year, data.cantPelis, data.cantSeries); // Para imprimir size_t tiene que ser %zu
+}
+
+static void
+loadQuery2( TQuery2 data, FILE * query2)
+{
+    fprintf(query2, "%d;%d;%s\n", data.year, data.cantPelis, data.genero);
+}
+
+static void
+loadQuery3(TQuery3 data, FILE * query3)
+{
+    if( data.serie != NULL )
+    {
+        fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
+                data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
+                data.serie->name, data.serie->numVotes, data.serie->avgRating);
+    }
+    else
+    {
+        fprintf(query3, "%d;%s;%d;%.2f;%s\n",
+                data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
+                "No hay serie.");
+    }
+    free(data.peli);
+    free(data.serie);
+}
+
+static void
+loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
+{
+    fputs("year;films;series\n", query1);
+    fputs("year;genre;films\n", query2);
+    fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
+    int flag=1;
+    toBeginYear(data);
+    while( hasNextYear(data))
+    {
+        toBeginG(data);
+        loadQuery1(queryOne(data), query1);
+
+        while(flag){
+            loadQuery2(queryTwo(data,&flag), query2);
+        }
+
+        loadQuery3(queryThree(data), query3);
+
+        flag=1;
+        nextYear(data);
+    }
+    fclose(query3);
+    fclose(query2);
+    fclose(query1);
+}
+
+/*
+ * Crea los archivos .csv para las distintas queries y carga en ellos los datos correspondientes
+ */
+void
+processData(imdbADT data)
+{
+    FILE * q1, * q2, * q3; // Punteros a los files en el que se volcaran los datos de las queries
+    q1 = createCSV(FNAME_Q1);
+    q2 = createCSV(FNAME_Q2);
+    q3 = createCSV(FNAME_Q3);
+
+    loadData(data, q1, q2, q3);
 }

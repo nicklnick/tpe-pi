@@ -7,4 +7,6 @@
 
 int readFile(char fileName[], imdbADT data);
 
+void processData(imdbADT data);
+
 #endif //TPE_FINAL_FRONTEND_H

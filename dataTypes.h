@@ -19,7 +19,7 @@ typedef struct TEntry {
 typedef struct TQuery1 {
     unsigned year;
     unsigned cantPelis;
-    unsigned cantSeries
+    unsigned cantSeries;
 } TQuery1;
 
 typedef struct TQuery2 {

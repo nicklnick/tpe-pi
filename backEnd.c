@@ -30,6 +30,7 @@ queryTwo(imdbADT data, int * flag)
     out.genero = genero;
     out.cantPelis = cantPelis;
 
+    nextG(data);
     *flag = hasNextG(data);
 
     return out;
@@ -48,7 +49,6 @@ queryThree(imdbADT data)
     out.peli = peli;
     out.serie = serie;
 
-    free(peli);
-    free(serie);
+
     return out;
 }
