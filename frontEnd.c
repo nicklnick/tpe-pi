@@ -20,40 +20,46 @@
 
 #define UPDATE_TOKEN token = strtok(NULL, SEPARADOR);
 
-#define CHECK_ENTRY(token, field, type){ if(!strcmp(token, EMPTY_FIELD))\
-                                         entry->field = NO_FIELD;       \
-                                       else                             \
-                                         entry->field = type(token);    \
-};
+#define CHECK_ENTRY(token, field, type) { if(!strcmp(token, EMPTY_FIELD)) \
+                                            entry->field = NO_FIELD;     \
+                                          else                            \
+                                            entry->field = type(token);  \
+                                        };
 
 
-static char ** loadGenres(char * line, unsigned * cant){
+static char **
+loadGenres(char * line, unsigned * cant)
+{
     int size, dim, i;
     char ** genres = NULL;
 
-    for(i=0, size=0, dim=0; line[i]!=0; ){
-
-        if(size%BLOCK==0) {
+    for( i = 0, size = 0, dim = 0; line[i] != 0; )
+    {
+        if( size % BLOCK == 0 )
+        {
             genres = realloc(genres, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
             size += BLOCK;
         }
         genres[dim++] = copyText(line + i, SEPARADOR_2);        // + i cantidad de offset
 
-        for(;line[i]!=SEPARADOR_2 && line[i]!=0; i++);      // Pasa al proximo genero Ej: Drama Comedia => Comedia
-        if(line[i]!=0){
+        for( ; line[i] != SEPARADOR_2 && line[i] != 0 ; i++ ) // Pasa al proximo genero Ej: Drama Comedia => Comedia
+            ;
+
+        if( line[i] != 0 )
             i++;
-        }
     }
-    genres = realloc(genres, dim*sizeof(char *));                                  //!!!!!!!!
+    genres = realloc(genres, dim * sizeof(char *));                                  //!!!!!!!!
     *cant = dim;
     return genres;
 }
 
 
-static int updateEntry(TEntry * entry, char * line){
+static int
+updateEntry(TEntry * entry, char * line)
+{
     char * token = strtok(line, SEPARADOR);
 
-    if(!strcmp(token, "movie"))      // Tipo de entry
+    if( !strcmp(token, "movie") )      // Tipo de entry
         entry->type = PELI;
     else
         entry->type = SERIE;
@@ -62,7 +68,7 @@ static int updateEntry(TEntry * entry, char * line){
     entry->name = copyText(token, 0);        // Nombre de entry
 
     UPDATE_TOKEN
-    if(!strcmp(token, EMPTY_FIELD))
+    if( !strcmp(token, EMPTY_FIELD) )
         return INVALID_YEAR;                   // Verifica si el anio es valido, si no lo eso => corta
     else
         entry->startYear = atoi(token);        // Anio de comienzo
@@ -87,24 +93,27 @@ static int updateEntry(TEntry * entry, char * line){
     return OK;
 }
 
-static void freeResources(TEntry * entry){
-    if(entry==NULL)
+static void
+freeResources(TEntry * entry)
+{
+    if( entry == NULL )
         return;
+
     free(entry->name);
-    for(int i=0; i<entry->cantGenres; i++){
+    for(int i=0; i<entry->cantGenres; i++)
         free(entry->genre[i]);
-    }
     free(entry->genre);
 }
 
 
-int readFile(imdbADT data, char * fileName){
+int
+readFile(imdbADT data, char * fileName)
+{
     FILE * imdbFile;
     imdbFile = fopen(fileName, "r");
 
-    if(imdbFile == NULL){
+    if( imdbFile == NULL )
         return ERROR_DE_FILE;
-    }
 
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
@@ -112,12 +121,15 @@ int readFile(imdbADT data, char * fileName){
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
-    while(fgets(line, sizeof(line), imdbFile)) {
-        if(updateEntry(entry, line)!=INVALID_YEAR){
+    while( fgets(line, sizeof(line), imdbFile) )
+    {
+        if( updateEntry(entry, line) != INVALID_YEAR )
+        {
             updateData(data, entry);                    // Solo si el entry es valido se actualiza el ADT
             freeResources(entry);
         }
-        else{
+        else
+        {
             free(entry->name);
         }
     }
@@ -131,7 +143,8 @@ static FILE *
 createCSV(const char * fileName)
 {
     // Si no me pasan el nombre del archivo
-    if( fileName == NULL ) return NULL; // Error
+    if( fileName == NULL )
+        return NULL; // Error
 
     // Creamos el archivo para escritura, y cargamos los datos.
     FILE * newFile = fopen(fileName, "w");
@@ -139,29 +152,27 @@ createCSV(const char * fileName)
 }
 
 static void
-loadQuery1( TQuery1 data, FILE * query1)
-{
-    fprintf(query1, "%d;%d;%d\n", data.year, data.cantPelis, data.cantSeries); // Para imprimir size_t tiene que ser %zu
+loadQuery1( TQuery1 data, FILE * query1) {
+    fprintf(query1, "%d;%d;%d\n", data.year, data.cantPelis, data.cantSeries);
 }
 
 static void
-loadQuery2( TQuery2 data, FILE * query2)
-{
+loadQuery2( TQuery2 data, FILE * query2) {
     fprintf(query2, "%d;%d;%s\n", data.year, data.cantPelis, data.genero);
 }
 
 static void
 loadQuery3(TQuery3 data, FILE * query3)
 {
-    if( data.serie != NULL )
+    if( data.serie->name != NULL )
     {
-        fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
+        fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.1f\n",
                 data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
                 data.serie->name, data.serie->numVotes, data.serie->avgRating);
     }
     else
     {
-        fprintf(query3, "%d;%s;%d;%.2f;%s\n",
+        fprintf(query3, "%d;%s;%d;%.1f;%s\n",
                 data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
                 "No hay serie.");
     }
@@ -175,20 +186,20 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fputs("year;films;series\n", query1);
     fputs("year;genre;films\n", query2);
     fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
-    int flag=1;
+
+    int hasNextGenre = 1;
     toBeginYear(data);
     while( hasNextYear(data))
     {
         toBeginG(data);
         loadQuery1(queryOne(data), query1);
 
-        while(flag){
-            loadQuery2(queryTwo(data,&flag), query2);
-        }
+        while( hasNextGenre )
+            loadQuery2(queryTwo(data,&hasNextGenre), query2);
 
         loadQuery3(queryThree(data), query3);
 
-        flag=1;
+        hasNextGenre = 1;
         nextYear(data);
     }
     fclose(query3);
@@ -196,9 +207,7 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fclose(query1);
 }
 
-/*
- * Crea los archivos .csv para las distintas queries y carga en ellos los datos correspondientes
- */
+/* Crea los archivos .csv para las distintas queries y carga en ellos los datos correspondientes */
 void
 writeData(imdbADT data)
 {
