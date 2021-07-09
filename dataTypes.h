@@ -16,6 +16,24 @@ typedef struct TEntry {
     unsigned cantGenres;
 } TEntry;
 
+typedef struct TQuery1 {
+    unsigned year;
+    unsigned cantPelis;
+    unsigned cantSeries
+} TQuery1;
+
+typedef struct TQuery2 {
+    unsigned year;
+    unsigned cantPelis;
+    char * genero;
+} TQuery2;
+
+// OKE
+typedef struct TQuery3 {
+    TEntry * peli;
+    TEntry * serie;
+} TQuery3;
+
 #define PELI 1
 #define SERIE 2
 #define NO_FIELD 0
