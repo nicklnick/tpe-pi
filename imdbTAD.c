@@ -327,5 +327,5 @@ updateYear(TYearL firstYear, TEntry * entry, int * error)
 
 void updateData(imdbADT data, TEntry * entry, int * error) {
     data->firstY = updateYear(data->firstY, entry, error);
-    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */ ---->>>>> ESTOS LOS SAQUE PQ NO VAN Y SI LOS PONEMOS MARCELO LOS VE COMO DEBILIDAD. HUELE EL MIEDO
+    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
 }
