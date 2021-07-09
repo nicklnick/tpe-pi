@@ -5,11 +5,6 @@
 #include <stdlib.h>
 #include "imdbTAD.h"
 
-/* Nombres de los archivos a crear */
-#define FNAME_Q1 "query1.csv"
-#define FNAME_Q2 "query2.csv"
-#define FNAME_Q3 "query3.csv"
-
 /*
  * Funcion:     queryOne
  * Uso:         query1 = queryOne();

@@ -5,12 +5,6 @@
 #include "dataTypes.h"
 #include "imdbTAD.h"
 
-#define NO_FIELD 0 // Si el campo no aplica a ese tipo de entrada
-#define PELI 1
-#define SERIE 2
-
-#define BLOCK 10
-
 typedef struct TGenre {
     char * genre;
     unsigned cant;  // Cantidad de peliculas del genero
