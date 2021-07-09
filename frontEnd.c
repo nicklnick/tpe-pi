@@ -34,7 +34,7 @@ static char ** loadGenres(char * line, unsigned * cant){
     for(i=0, size=0, dim=0; line[i]!=0; ){
 
         if(size%BLOCK==0) {
-            genres = realloc(genres, (size + BLOCK) * sizeof(char *));
+            genres = realloc(genres, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
             size += BLOCK;
         }
         genres[dim++] = copyText(line + i, SEPARADOR_2);        // + i cantidad de offset
@@ -44,7 +44,7 @@ static char ** loadGenres(char * line, unsigned * cant){
             i++;
         }
     }
-    genres = realloc(genres, dim*sizeof(char *));
+    genres = realloc(genres, dim*sizeof(char *));                                  //!!!!!!!!
     *cant = dim;
     return genres;
 }
@@ -98,7 +98,7 @@ static void freeResources(TEntry * entry){
 }
 
 
-int readFile(char fileName[], imdbADT data){
+int readFile(imdbADT data, char * fileName){
     FILE * imdbFile;
     imdbFile = fopen(fileName, "r");
 
@@ -108,7 +108,7 @@ int readFile(char fileName[], imdbADT data){
 
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
-    TEntry * entry = malloc(sizeof(TEntry));
+    TEntry * entry = malloc(sizeof(TEntry));                                            //!!!!!!!!
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
@@ -170,7 +170,7 @@ loadQuery3(TQuery3 data, FILE * query3)
 }
 
 static void
-loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
+writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
 {
     fputs("year;films;series\n", query1);
     fputs("year;genre;films\n", query2);
@@ -200,12 +200,12 @@ loadData(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
  * Crea los archivos .csv para las distintas queries y carga en ellos los datos correspondientes
  */
 void
-processData(imdbADT data)
+writeData(imdbADT data)
 {
     FILE * q1, * q2, * q3; // Punteros a los files en el que se volcaran los datos de las queries
     q1 = createCSV(FNAME_Q1);
     q2 = createCSV(FNAME_Q2);
     q3 = createCSV(FNAME_Q3);
 
-    loadData(data, q1, q2, q3);
+    writeQueries(data, q1, q2, q3);
 }
