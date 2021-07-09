@@ -1,3 +1,12 @@
+/*
+ *  Created on 09/07/2021
+ *  Created by:
+ *      - Marcos Gronda
+ *      - Tomas Camilo Gay Bare
+ *      - Nicolas Matias Margenat
+ *  Copyright © 2021. All rights reserved.
+*/
+
 #ifndef TPE_IMDB_ERRORCODES_H
 #define TPE_IMDB_ERRORCODES_H
 

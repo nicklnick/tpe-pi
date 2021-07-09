@@ -1,6 +1,12 @@
-//
-// Created by on 6/7/2021.
-//
+/*
+ *  Created on 09/07/2021
+ *  Created by:
+ *      - Marcos Gronda
+ *      - Tomas Camilo Gay Bare
+ *      - Nicolas Matias Margenat
+ *  Copyright © 2021. All rights reserved.
+*/
+
 #include "backEnd.h"
 
 /* Carga los datos del query1 en su respectivo archivo */

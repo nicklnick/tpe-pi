@@ -1,12 +1,18 @@
+/*
+ *  Created on 09/07/2021
+ *  Created by:
+ *      - Marcos Gronda
+ *      - Tomas Camilo Gay Bare
+ *      - Nicolas Matias Margenat
+ *  Copyright © 2021. All rights reserved.
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "frontEnd.h"
-#include "imdbTAD.h"
-#include "dataTypes.h"
 #include "backEnd.h"
-#include "errorCodes.h"
 
 #define LINE_MAX 400            // Maxima cantidad de caracteres para levantar del file
 
@@ -25,7 +31,8 @@
                                             entry->field = type(token);   \
                                         };
 
-static char ** loadGenres(char * line, unsigned * cant, int * error)
+static char **
+loadGenres(char * line, unsigned * cant, int * error)
 {
     int size, dim, i;
     char ** genres = NULL, ** aux = NULL;
@@ -62,7 +69,8 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
 /* Se asume que atoi y atof no van a dar valores inesperados, pues cliente asegura que  */
 /* la entrada (imdbv3.csv), es correcta.                                                */
 
-static int updateEntry(TEntry * entry, char * line, int * error)
+static int
+updateEntry(TEntry * entry, char * line, int * error)
 {
     char * token = strtok(line, SEPARADOR);
 
@@ -121,7 +129,9 @@ freeResources(TEntry * entry)
 }
 
 
-void readFile(imdbADT data, char * fileName){
+void
+readFile(imdbADT data, char * fileName)
+{
     int error = OK;                         // Lo inicializamos con que esta ok, por ende no hay errores
 
     FILE * imdbFile;

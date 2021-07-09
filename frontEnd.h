@@ -1,3 +1,11 @@
+/*
+ *  Created on 09/07/2021
+ *  Created by:
+ *      - Marcos Gronda
+ *      - Tomas Camilo Gay Bare
+ *      - Nicolas Matias Margenat
+ *  Copyright © 2021. All rights reserved.
+*/
 
 #ifndef TPE_FINAL_FRONTEND_H
 #define TPE_FINAL_FRONTEND_H
