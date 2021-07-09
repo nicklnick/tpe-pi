@@ -42,6 +42,7 @@ typedef struct imdbCDT {
 imdbADT newDataBase(int * error){
     imdbADT new = calloc(1, sizeof(imdbCDT));
 
+    // Si no hay memoria disponible, retorna que hay un error de memoria insuficiente
     NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
@@ -55,7 +56,9 @@ freeADTGenre(TGenreL list)
         return;
 
     freeADTGenre(list->tail);
-    if(list->genre != NULL)         // Caso en que no se pudo allocar nada
+
+    // Proteccion contra el caso en donde el programa encontro un error sin poder asignar nada
+    if(list->genre != NULL)
         free(list->genre);
     free(list);
 }
@@ -67,8 +70,12 @@ freeADTYear(TYearL list)
         return;
 
     freeADTYear(list->tail);
+
+    // Liberamos los generos de cada ano
     freeADTGenre(list->firstG);
 
+    // Chequeamos que no sean NULL en el caso de que haya habido un error antes de asignar
+    // ese espacio de memoria
     if(list->peli.name != NULL)
         free(list->peli.name);
 
@@ -87,15 +94,17 @@ void freeADT(imdbADT data) {
 }
 
 
-//BACK
+// Funciones que interactuan con otras funciones de backEnd
 
 void getAmountCurrY(imdbADT data, unsigned * year, unsigned * cantPelis, unsigned * cantSeries) {
+    // Devuelve los parametros pedidos en el query 1
     *year = data->currentY->year;
     *cantPelis = data->currentY->cantPelis;
     *cantSeries = data->currentY->cantSeries;
 }
 
 void getAmountG(imdbADT data, unsigned * year, char ** genero, unsigned * cantPelis) {
+    // Devuelve los parametros pedidos en el query 2
     *year = data->currentY->year;
     *genero = data->currentY->currentG->genre;
     *cantPelis = data->currentY->currentG->cant;
@@ -105,15 +114,19 @@ TEntry *
 getMostPopular(imdbADT data, char type, int * error)
 {
     TEntry * mostVoted = malloc(sizeof(TEntry));
+    // Si no se puede asignarse retorna NULL
     NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
+    // Se crea una copia de la peli o serie mas popular
     if( type == PELI )
         *mostVoted = data->currentY->peli;
     else // type == SERIE
         *mostVoted = data->currentY->serie;
     return mostVoted;
 }
+
+// Funciones para iterar el anio
 
 void toBeginYear(imdbADT data) {
     data->currentY = data->firstY;
@@ -127,8 +140,11 @@ void nextYear(imdbADT data) {
     if( hasNextYear(data) == 0 )
         return;
 
+    // Hace que currentY apunte al siguiente anio
     data->currentY = data->currentY->tail;
 }
+
+// Funciones para iterar el genero
 
 void toBeginG(imdbADT data) {
     data->currentY->currentG = data->currentY->firstG;
@@ -142,30 +158,37 @@ void nextG(imdbADT data){
     if( hasNextG(data) == 0 )
         return;
 
+    // Hace que currentG apunte al siguiente genero
     data->currentY->currentG = data->currentY->currentG->tail;
 }
 
-//FRONT
+
+// Funciones que interactuan con funciones de frontEnd
+
 static TGenreL
 addGenres(TGenreL list, char ** genres, unsigned cantGenres, int * error)
 {
     int c;
+    // Chequea que queden generos para agregar
     if( !cantGenres )
         return list;
     if( list == NULL || (c =strcmp(list->genre, *genres)) > 0 )
     {
         TGenreL newGenre = malloc(sizeof(TGenre));
+        // Si no se puede asignarse retorna NULL
         NO_MEM(*error)
         RETURN_IF_ERROR(*error, NULL)
 
         newGenre->genre = copyText(*genres,EMPTY, error);
+        // Si no se puede asignar la cantidad necesaria, se retorna la direccion
+        // con la cantidad que ha sido posible reservar
         RETURN_IF_ERROR(*error, newGenre)
 
         newGenre->cant = 1;
         newGenre->tail = addGenres(list, genres + 1, cantGenres - 1, error);
         return newGenre;
     }
-    else if( c == 0 )
+    else if( c == 0 ) // Ya existe el genero
     {
         list->cant++;
         list->tail = addGenres(list->tail, genres + 1, cantGenres - 1, error);
@@ -180,6 +203,7 @@ static TYearL
 createYear(TEntry * entry, int * error)
 {
     TYearL newYear = calloc(1, sizeof(TYear));
+    // Si no se puede asignar se retorna NULL
     NO_MEM(*error)
     RETURN_IF_ERROR(*error, NULL)
 
@@ -190,21 +214,22 @@ createYear(TEntry * entry, int * error)
         newYear->peli = *entry;
         newYear->peli.genre = NULL;
         newYear->peli.name = copyText(entry->name,EMPTY, error);
+        // Retorna la direccion con la cnatidad que se ha podido reservar
         RETURN_IF_ERROR(*error, newYear)
     }
-    else //entry->type == SERIE
+    else // entry->type == SERIE
     {
         newYear->cantSeries++;
         newYear->serie = *entry;
         newYear->serie.genre = NULL;
         newYear->serie.name = copyText(entry->name,EMPTY, error);
+        // Retorna la direccion con la cnatidad que se ha podido reservar
         RETURN_IF_ERROR(*error, newYear)
     }
     newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres, error);
     return newYear;
 }
 
-//UPDATE MOST VOTED
 static void
 updateMostPopular(TYearL current, TEntry * entry, int * error)
 {
@@ -212,11 +237,13 @@ updateMostPopular(TYearL current, TEntry * entry, int * error)
     {
         if (entry->numVotes > current->peli.numVotes)
         {
-            if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
+            // Si se cambia el mostPopular, se tiene que liberar el anterior
+            if(current->peli.name != NULL)
                 free(current->peli.name);
             current->peli = *entry;
-            current->peli.genre = NULL;
+            current->peli.genre = NULL; // El genero no se usa
             current->peli.name = copyText(entry->name,EMPTY, error);
+            // Retorna la direccion con la cnatidad que se ha podido reservar
             RETURN_IF_ERROR(*error,)
         }
     }
@@ -224,17 +251,19 @@ updateMostPopular(TYearL current, TEntry * entry, int * error)
     {
         if (entry->numVotes > current->serie.numVotes)
         {
-            if(current->serie.name != NULL)                 //Si se cambia el mostPopular, se tiene que liberar el anterior
+            // Si se cambia el mostPopular, se tiene que liberar el anterior
+            if(current->serie.name != NULL)
                 free(current->serie.name);
             current->serie = *entry;
-            current->serie.genre = NULL;
+            current->serie.genre = NULL; // El genero no se usa
             current->serie.name = copyText(entry->name,EMPTY, error);
+            // Retorna la direccion con la cnatidad que se ha podido reservar
             RETURN_IF_ERROR(*error,)
         }
     }
 }
 
-// UPDATE CANTIDADES
+
 static void updateCant(TYearL current, TEntry * entry, int * error)
 {
     if(entry->type == PELI)
@@ -242,15 +271,15 @@ static void updateCant(TYearL current, TEntry * entry, int * error)
     else
         current->cantSeries++;
 
+    // Agrega los generos
     current->firstG = addGenres(current->firstG,entry->genre,entry->cantGenres, error);
-    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
 }
 
 
 static TYearL
 updateYear(TYearL firstYear, TEntry * entry, int * error)
 {
-    //CASO PRIMER ANIO
+    // Caso primer anio
    if( firstYear == NULL )
    {
         TYearL newYear = createYear(entry, error);
@@ -258,38 +287,38 @@ updateYear(TYearL firstYear, TEntry * entry, int * error)
     }
 
     TYearL current = firstYear;
+    // Se usa un prev para encadenar la lista
     TYearL prev = NULL;
     int updatedList = 0;
 
     while( !updatedList )
     {
-        //CASO NO EXISTE
+        // Caso en donde no existe el anio
         if( current == NULL || current->year < entry->startYear )
         {
             TYearL newYear = createYear(entry, error);
             RETURN_IF_ERROR(*error, newYear)
 
             newYear->tail = current;
-            //CASO REMPLAZAR EL PRIMER ANIO
+            // Caso en donde se debe reemplazar el primer anio
             if( prev == NULL )
                 return newYear;
 
             prev->tail = newYear;
             updatedList = 1;
         }
-        //CASO SIGUE BUSCANDO
+        // Caso sigue buscando el anio
         else if(current->year > entry->startYear)
         {
             prev = current;
             current = current->tail;
         }
-        //CASO YA EXISTE
+        //Caso ya existe el anio
         else
         {
             updateMostPopular(current, entry,error);
             updateCant(current, entry, error);
             updatedList = 1;
-            // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
         }
     }
 
@@ -298,5 +327,5 @@ updateYear(TYearL firstYear, TEntry * entry, int * error)
 
 void updateData(imdbADT data, TEntry * entry, int * error) {
     data->firstY = updateYear(data->firstY, entry, error);
-    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */
+    // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */ ---->>>>> ESTOS LOS SAQUE PQ NO VAN Y SI LOS PONEMOS MARCELO LOS VE COMO DEBILIDAD. HUELE EL MIEDO
 }
