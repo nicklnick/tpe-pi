@@ -13,8 +13,9 @@ typedef struct imdbCDT * imdbADT;
  * ----------------------------------------------------------------------
  * Descripcion: Crea una nueva Base de Datos de peliculas y series.
  * ----------------------------------------------------------------------
- * Recibe:      VOID
- * Devuelve:    Puntero a Base de Datos
+ * Recibe:      Puntero a zona donde hay un flag de error
+ * Devuelve:    Puntero a Base de Datos, o enciende el flag en caso de haber
+ *              algun error
  */
 imdbADT newDataBase(int * error);
 
@@ -38,7 +39,7 @@ void freeADT(imdbADT data);
  * ----------------------------------------------------------------------
  * Recibe:      Puntero a Base de Datos, nueva entrada de datos
  *              y puntero a zona donde hay un flag de error
- * Devuelve:    VOID
+ * Devuelve:    En caso de haber un error enciende el flag
  */
 void updateData(imdbADT data, TEntry * entry, int * error);
 
@@ -98,7 +99,8 @@ void getAmountCurrY(imdbADT data, unsigned * year, unsigned * cantPelis, unsigne
  * ----------------------------------------------------------------------
  * Recibe:      Puntero a Base de Datos, char que indica si queremos una PELI o SERIE
  *              y puntero a zona donde hay un flag de error
- * Devuelve:    Una copia con los datos de la PELI/SERIE mas votada en un determinado año
+ * Devuelve:    Una copia con los datos de la PELI/SERIE mas votada en un determinado año,
+ *              y enciende el flag en caso de haber error
  */
 TEntry * getMostPopular(imdbADT data, char type, int * error);
 
@@ -117,6 +119,5 @@ TEntry * getMostPopular(imdbADT data, char type, int * error);
  *                  - cantPelis : la cantidad de peliculas del año year.
  */
 void getAmountG(imdbADT data, unsigned * year, char ** genero, unsigned * cantPelis);
-
 
 #endif
