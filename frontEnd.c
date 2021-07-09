@@ -34,7 +34,7 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
     {
         if(size%BLOCK==0)
         {
-            genres = realloc(aux, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
+            genres = realloc(aux, (size + BLOCK) * sizeof(char *));
             NO_MEM(*error)
             RETURN_IF_ERROR(*error, aux)
             aux = genres;
@@ -48,7 +48,7 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
         }
     }
     // Este realloc nunca deberia tirar error porque "corta" lo que sobra
-    genres = realloc(genres, dim*sizeof(char *));                                  //!!!!!!!!
+    genres = realloc(genres, dim*sizeof(char *));
     *cant = dim;
     return genres;
 }
@@ -113,7 +113,7 @@ int readFile(imdbADT data, char * fileName){
 
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
-    TEntry * entry = malloc(sizeof(TEntry));                                            //!!!!!!!!
+    TEntry * entry = malloc(sizeof(TEntry));
     NO_MEM(error)
     FREE_ADT(error, data)
     RETURN_IF_ERROR(error, INSUFFICIENT_MEM)
@@ -121,15 +121,17 @@ int readFile(imdbADT data, char * fileName){
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
     while( !error && fgets(line, sizeof(line), imdbFile) ) {
-        if(updateEntry(entry, line, &error)!=INVALID_YEAR){
+        if(updateEntry(entry, line, &error)!=INVALID_YEAR && error==OK){        // Error se actualiza en updateEntry y luego se verifica
             updateData(data, entry, &error);                    // Solo si el entry es valido se actualiza el ADT
 
             // Si hubo error liberamos el adt y cortamos el programa
             FREE_ADT(error, data)
             freeResources(entry);
         }
-        else{
-            free(entry->name);
+        else
+        {
+            if(entry->name != NULL)         // Si el primer realloc de copyText no funciona
+                free(entry->name);          //!!!!!!!!!!!!!!!
         }
     }
 
@@ -162,22 +164,26 @@ loadQuery2( TQuery2 data, FILE * query2)
 }
 
 static void
-loadQuery3(TQuery3 data, FILE * query3)
+loadQuery3(TQuery3 data, FILE * query3, int * error)
 {
-    if( data.serie->name != NULL )
-    {
-        fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
-                data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
-                data.serie->name, data.serie->numVotes, data.serie->avgRating);
+    if(error==OK){
+        if( data.serie->name != NULL )
+        {
+            fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
+                    data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
+                    data.serie->name, data.serie->numVotes, data.serie->avgRating);
+        }
+        else
+        {
+            fprintf(query3, "%d;%s;%d;%.2f;%s\n",
+                    data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
+                    "No hay serie.");
+        }
     }
-    else
-    {
-        fprintf(query3, "%d;%s;%d;%.2f;%s\n",
-                data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
-                "No hay serie.");
-    }
-    free(data.peli);
-    free(data.serie);
+    if(data.peli!=NULL)     // Verifica que en ambos casos haya podido allocar
+        free(data.peli);
+    if(data.serie!=NULL)
+        free(data.serie);
 }
 
 static void
@@ -197,7 +203,9 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
             loadQuery2(queryTwo(data,&flag), query2);
         }
 
-        loadQuery3(queryThree(data, &error), query3);
+        TQuery3 aux = queryThree(data, &error);
+        loadQuery3(aux, query3, &error);
+        RETURN_IF_ERROR(error,)
 
         flag=1;
         nextYear(data);
