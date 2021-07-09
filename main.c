@@ -5,12 +5,13 @@
 int main(int argc, char * argv[]) {
     char * file = "C:\\Users\\mbox\\CLionProjects\\TPE-FINAL\\imdbv3.csv";      ///!!! CAMBIAR DE ACUERDO
 
-    imdbADT data = newDataBase();
+    int flag=0;
+    imdbADT data = newDataBase(&flag);
 
-    int c = readFile(file, data);
+    int c = readFile(data, file);
 
     if(c!=5)
-        processData(data);
+        writeData(data);
 
     freeADT(data);
     return 0;

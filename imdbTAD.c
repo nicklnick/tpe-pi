@@ -56,7 +56,8 @@ freeADTGenre(TGenreL list)
         return;
 
     freeADTGenre(list->tail);
-    free(list->genre);
+    if(list->genre != NULL)         // Caso en que no se pudo allocar nada
+        free(list->genre);
     free(list);
 }
 
@@ -158,7 +159,9 @@ addGenres(TGenreL list, char ** genres, unsigned cantGenres, int * error)
         NO_MEM(*error)
         RETURN_IF_ERROR(*error, NULL)
 
-        newGenre->genre = copyText(*genres,EMPTY);   // !!!!!!!!!!!!!!!!!!!!!!!!!!
+        newGenre->genre = copyText(*genres,EMPTY, error);
+        RETURN_IF_ERROR(*error, newGenre)
+
         newGenre->cant = 1;
         newGenre->tail = addGenres(list, genres + 1, cantGenres - 1, error);
         return newGenre;
@@ -187,14 +190,16 @@ createYear(TEntry * entry, int * error)
         newYear->cantPelis++;
         newYear->peli = *entry;
         newYear->peli.genre = NULL;
-        newYear->peli.name = copyText(entry->name,EMPTY);
+        newYear->peli.name = copyText(entry->name,EMPTY, error);
+        RETURN_IF_ERROR(*error, newYear)
     }
     else //entry->type == SERIE
     {
         newYear->cantSeries++;
         newYear->serie = *entry;
         newYear->serie.genre = NULL;
-        newYear->serie.name = copyText(entry->name,EMPTY);
+        newYear->serie.name = copyText(entry->name,EMPTY, error);
+        RETURN_IF_ERROR(*error, newYear)
     }
     newYear->firstG = addGenres(newYear->firstG, entry->genre, entry->cantGenres, error);
     return newYear;
@@ -202,15 +207,16 @@ createYear(TEntry * entry, int * error)
 
 //UPDATE MOST VOTED
 static void
-updateMostPopular(TYearL current, TEntry * entry)
+updateMostPopular(TYearL current, TEntry * entry, int * error)
 {
     if (entry->numVotes > current->peli.numVotes)
     {
         if(current->peli.name != NULL)                         //Si se cambia el mostPopular, se tiene que liberar el anterior
             free(current->peli.name);
         current->peli = *entry;
-        current->peli.name = copyText(entry->name,EMPTY);
         current->peli.genre = NULL;
+        current->peli.name = copyText(entry->name,EMPTY, error);
+        RETURN_IF_ERROR(*error,)
     }
     else //entry->type == SERIE
     {
@@ -218,8 +224,9 @@ updateMostPopular(TYearL current, TEntry * entry)
             if(current->serie.name != NULL)                 //Si se cambia el mostPopular, se tiene que liberar el anterior
                 free(current->serie.name);
             current->serie = *entry;
-            current->serie.name = copyText(entry->name,EMPTY);
             current->serie.genre = NULL;
+            current->serie.name = copyText(entry->name,EMPTY, error);
+            RETURN_IF_ERROR(*error,)
         }
     }
 }
@@ -276,7 +283,7 @@ updateYear(TYearL firstYear, TEntry * entry, int * error)
         //CASO YA EXISTE
         else
         {
-            updateMostPopular(current, entry);
+            updateMostPopular(current, entry,error);
             updateCant(current, entry, error);
             updatedList = 1;
             // CHECK_ERROR(error, );  /* No hace falta porque sale de todos modos */

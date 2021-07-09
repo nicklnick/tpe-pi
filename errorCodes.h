@@ -23,7 +23,7 @@
 
 /* Sale de la funcion si hubieron errores */
 #define RETURN_IF_ERROR(error, retValue) { if( (error) != 0 )          \
-                                            return (retValue); \
+                                            return retValue; \
                                          };
 
 #define FREE_ADT(error, data) { if( (error) != 0 )      \

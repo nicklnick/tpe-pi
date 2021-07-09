@@ -40,7 +40,8 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
             aux = genres;
             size += BLOCK;
         }
-        genres[dim++] = copyText(line + i, SEPARADOR_2);        // + i cantidad de offset
+        genres[dim++] = copyText(line + i, SEPARADOR_2, error);        // + i cantidad de offset
+        RETURN_IF_ERROR(*error, genres)
 
         for(;line[i]!=SEPARADOR_2 && line[i]!=0; i++);      // Pasa al proximo genero Ej: Drama Comedia => Comedia
         if(line[i]!=0){
@@ -49,7 +50,7 @@ static char ** loadGenres(char * line, unsigned * cant, int * error)
     }
     // Este realloc nunca deberia tirar error porque "corta" lo que sobra
     genres = realloc(genres, dim*sizeof(char *));
-    *cant = dim;
+    *cant = dim;                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return genres;
 }
 
@@ -63,7 +64,8 @@ static int updateEntry(TEntry * entry, char * line, int * error){
         entry->type = SERIE;
 
     UPDATE_TOKEN
-    entry->name = copyText(token, 0);        // Nombre de entry
+    entry->name = copyText(token, EMPTY, error);        // Nombre de entry
+    RETURN_IF_ERROR(*error, *error)
 
     UPDATE_TOKEN
     if(!strcmp(token, EMPTY_FIELD))
@@ -78,6 +80,7 @@ static int updateEntry(TEntry * entry, char * line, int * error){
     unsigned cant;
     entry->genre = loadGenres(token, &cant, error);        // Carga los generos en la lista
     entry->cantGenres = cant;
+    RETURN_IF_ERROR(*error, *error)
 
     UPDATE_TOKEN
     CHECK_ENTRY(token, avgRating, atof);
@@ -99,7 +102,8 @@ static void freeResources(TEntry * entry){
     if( entry->genre != NULL )
     {
         for(int i=0; i<entry->cantGenres; i++)
-            free(entry->genre[i]);
+            if(entry->genre[i] != NULL)         // Verifica que haya allocado
+                free(entry->genre[i]);
         free(entry->genre);
     }
 }
@@ -166,7 +170,7 @@ loadQuery2( TQuery2 data, FILE * query2)
 static void
 loadQuery3(TQuery3 data, FILE * query3, int * error)
 {
-    if(error==OK){
+    if(*error==OK){
         if( data.serie->name != NULL )
         {
             fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",

@@ -3,6 +3,7 @@
 #define TPE_FINAL_DATATYPES_H
 
 #include <stdlib.h>
+#include "errorCodes.h"
 
 typedef struct TEntry {
     char * name;  // Nombre de la serie o pelicula
@@ -41,17 +42,20 @@ typedef struct TQuery3 {
 #define EMPTY 0             // Si en copyText no se necesita la funcionalidad de SEPARADOR
 #define BLOCK 10
 
-static char * copyText(const char * text, char c){          // Copia hasta \0 o hasta el caracter c
+static char * copyText(const char * text, char c, int * error){          // Copia hasta \0 o hasta el caracter c
     int i;
-    char * new = NULL;
+    char * new = NULL, * aux = NULL;
 
     for(i=0; text[i]!=0 && text[i]!=c; i++){
         if(i%BLOCK==0){
-            new = realloc(new, (i+BLOCK)*sizeof(char));
+            new = realloc(aux, (i+BLOCK)*sizeof(char));
+            NO_MEM(*error)
+            RETURN_IF_ERROR(*error, aux)
+            aux = new;
         }
         new[i] = text[i];
     }
-
+    // Este realloc nunca deberia tirar error porque "corta" lo que sobra
     new = realloc(new, (i+1)*sizeof(char));
     new[i]=0;
     return new;
