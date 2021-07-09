@@ -6,6 +6,7 @@
 #include "imdbTAD.h"
 #include "dataTypes.h"
 #include "backEnd.h"
+#include "errorCodes.h"
 
 #define LINE_MAX 400
 
@@ -13,9 +14,6 @@
 #define SEPARADOR_2 ','
 
 #define OK 0
-#define ERROR_DE_FILE 5
-#define INVALID_YEAR 3
-
 #define EMPTY_FIELD "\\N"
 
 #define UPDATE_TOKEN token = strtok(NULL, SEPARADOR);
@@ -27,20 +25,23 @@
                                         };
 
 
-static char **
-loadGenres(char * line, unsigned * cant)
+static char ** loadGenres(char * line, unsigned * cant, int * error)
 {
     int size, dim, i;
-    char ** genres = NULL;
+    char ** genres = NULL, ** aux = NULL;
 
-    for( i = 0, size = 0, dim = 0; line[i] != 0; )
+    for(i=0, size=0, dim=0; line[i]!=0; )
     {
-        if( size % BLOCK == 0 )
+        if(size%BLOCK==0)
         {
-            genres = realloc(genres, (size + BLOCK) * sizeof(char *));              //!!!!!!!!
+            genres = realloc(aux, (size + BLOCK) * sizeof(char *));
+            NO_MEM(*error)
+            RETURN_IF_ERROR(*error, aux)
+            aux = genres;
             size += BLOCK;
         }
-        genres[dim++] = copyText(line + i, SEPARADOR_2);        // + i cantidad de offset
+        genres[dim++] = copyText(line + i, SEPARADOR_2, error);        // + i cantidad de offset
+        RETURN_IF_ERROR(*error, genres)
 
         for( ; line[i] != SEPARADOR_2 && line[i] != 0 ; i++ ) // Pasa al proximo genero Ej: Drama Comedia => Comedia
             ;
@@ -48,15 +49,14 @@ loadGenres(char * line, unsigned * cant)
         if( line[i] != 0 )
             i++;
     }
-    genres = realloc(genres, dim * sizeof(char *));                                  //!!!!!!!!
-    *cant = dim;
+    // Este realloc nunca deberia tirar error porque "corta" lo que sobra
+    genres = realloc(genres, dim*sizeof(char *));
+    *cant = dim;                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return genres;
 }
 
 
-static int
-updateEntry(TEntry * entry, char * line)
-{
+static int updateEntry(TEntry * entry, char * line, int * error){
     char * token = strtok(line, SEPARADOR);
 
     if( !strcmp(token, "movie") )      // Tipo de entry
@@ -65,7 +65,8 @@ updateEntry(TEntry * entry, char * line)
         entry->type = SERIE;
 
     UPDATE_TOKEN
-    entry->name = copyText(token, 0);        // Nombre de entry
+    entry->name = copyText(token, EMPTY, error);        // Nombre de entry
+    RETURN_IF_ERROR(*error, *error)
 
     UPDATE_TOKEN
     if( !strcmp(token, EMPTY_FIELD) )
@@ -78,8 +79,9 @@ updateEntry(TEntry * entry, char * line)
 
     UPDATE_TOKEN
     unsigned cant;
-    entry->genre = loadGenres(token, &cant);        // Carga los generos en la lista
+    entry->genre = loadGenres(token, &cant, error);        // Carga los generos en la lista
     entry->cantGenres = cant;
+    RETURN_IF_ERROR(*error, *error)
 
     UPDATE_TOKEN
     CHECK_ENTRY(token, avgRating, atof);
@@ -100,37 +102,44 @@ freeResources(TEntry * entry)
         return;
 
     free(entry->name);
-    for(int i=0; i<entry->cantGenres; i++)
-        free(entry->genre[i]);
-    free(entry->genre);
+    // Si no hubo problemas con memoria
+    if( entry->genre != NULL )
+    {
+        for(int i=0; i<entry->cantGenres; i++)
+            if(entry->genre[i] != NULL)         // Verifica que haya allocado
+                free(entry->genre[i]);
+        free(entry->genre);
+    }
 }
 
 
-int
-readFile(imdbADT data, char * fileName)
-{
+int readFile(imdbADT data, char * fileName){
+    int error = OK; // Lo inicializamos con que esta ok, por ende no hay errores
     FILE * imdbFile;
     imdbFile = fopen(fileName, "r");
-
-    if( imdbFile == NULL )
-        return ERROR_DE_FILE;
+    FILE_ERROR(imdbFile, ERROR_DE_FILE);
 
     char line[LINE_MAX];        // Levanta hasta LINE_MAX caracteres del file
 
-    TEntry * entry = malloc(sizeof(TEntry));                                            //!!!!!!!!
+    TEntry * entry = malloc(sizeof(TEntry));
+    NO_MEM(error)
+    FREE_ADT(error, data)
+    RETURN_IF_ERROR(error, INSUFFICIENT_MEM)
 
     fgets(line, sizeof(line), imdbFile);    // Ignora la primera linea
 
-    while( fgets(line, sizeof(line), imdbFile) )
-    {
-        if( updateEntry(entry, line) != INVALID_YEAR )
-        {
-            updateData(data, entry);                    // Solo si el entry es valido se actualiza el ADT
+    while( !error && fgets(line, sizeof(line), imdbFile) ) {
+        if(updateEntry(entry, line, &error)!=INVALID_YEAR && error==OK){        // Error se actualiza en updateEntry y luego se verifica
+            updateData(data, entry, &error);                    // Solo si el entry es valido se actualiza el ADT
+
+            // Si hubo error liberamos el adt y cortamos el programa
+            FREE_ADT(error, data)
             freeResources(entry);
         }
         else
         {
-            free(entry->name);
+            if(entry->name != NULL)         // Si el primer realloc de copyText no funciona
+                free(entry->name);          //!!!!!!!!!!!!!!!
         }
     }
 
@@ -162,22 +171,26 @@ loadQuery2( TQuery2 data, FILE * query2) {
 }
 
 static void
-loadQuery3(TQuery3 data, FILE * query3)
+loadQuery3(TQuery3 data, FILE * query3, int * error)
 {
-    if( data.serie->name != NULL )
-    {
-        fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.1f\n",
-                data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
-                data.serie->name, data.serie->numVotes, data.serie->avgRating);
+    if(*error==OK){
+        if( data.serie->name != NULL )
+        {
+            fprintf(query3, "%d;%s;%d;%.2f;%s;%d;%.2f\n",
+                    data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
+                    data.serie->name, data.serie->numVotes, data.serie->avgRating);
+        }
+        else
+        {
+            fprintf(query3, "%d;%s;%d;%.2f;%s\n",
+                    data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
+                    "No hay serie.");
+        }
     }
-    else
-    {
-        fprintf(query3, "%d;%s;%d;%.1f;%s\n",
-                data.peli->startYear, data.peli->name, data.peli->numVotes, data.peli->avgRating,
-                "No hay serie.");
-    }
-    free(data.peli);
-    free(data.serie);
+    if(data.peli!=NULL)     // Verifica que en ambos casos haya podido allocar
+        free(data.peli);
+    if(data.serie!=NULL)
+        free(data.serie);
 }
 
 static void
@@ -186,8 +199,7 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
     fputs("year;films;series\n", query1);
     fputs("year;genre;films\n", query2);
     fputs("startYear;film;votesFilm;ratingFilm;serie;votesSerie;ratingSerie\n", query3);
-
-    int hasNextGenre = 1;
+    int flag=1, error = OK;
     toBeginYear(data);
     while( hasNextYear(data))
     {
@@ -197,7 +209,9 @@ writeQueries(imdbADT data, FILE * query1, FILE * query2, FILE * query3)
         while( hasNextGenre )
             loadQuery2(queryTwo(data,&hasNextGenre), query2);
 
-        loadQuery3(queryThree(data), query3);
+        TQuery3 aux = queryThree(data, &error);
+        loadQuery3(aux, query3, &error);
+        RETURN_IF_ERROR(error,)
 
         hasNextGenre = 1;
         nextYear(data);

@@ -16,7 +16,7 @@ typedef struct imdbCDT * imdbADT;
  * Recibe:      VOID
  * Devuelve:    Puntero a Base de Datos
  */
-imdbADT newDataBase();
+imdbADT newDataBase(int * error);
 
 /*
  * Funcion:     freeADT
@@ -36,10 +36,11 @@ void freeADT(imdbADT data);
  * ----------------------------------------------------------------------
  * Descripcion: Se ocupa de actualizar la Base de Datos
  * ----------------------------------------------------------------------
- * Recibe:      Puntero a Base de Datos y nueva entrada de datos
+ * Recibe:      Puntero a Base de Datos, nueva entrada de datos
+ *              y puntero a zona donde hay un flag de error
  * Devuelve:    VOID
  */
-void updateData(imdbADT data, TEntry * entry);
+void updateData(imdbADT data, TEntry * entry, int * error);
 
 
 //BACK
@@ -96,9 +97,10 @@ void getAmountCurrY(imdbADT data, unsigned * year, unsigned * cantPelis, unsigne
  * Descripcion: Devuelve una copia de la peli/serie con mas votos
  * ----------------------------------------------------------------------
  * Recibe:      Puntero a Base de Datos, char que indica si queremos una PELI o SERIE
+ *              y puntero a zona donde hay un flag de error
  * Devuelve:    Una copia con los datos de la PELI/SERIE mas votada en un determinado año
  */
-TEntry * getMostPopular(imdbADT data, char type);
+TEntry * getMostPopular(imdbADT data, char type, int * error);
 
 /* PRECONDICION: Haber llamado toBeginYear y toBeginG */
 /*
