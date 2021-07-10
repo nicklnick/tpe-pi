@@ -27,18 +27,18 @@
 
 /*
  * Funcion:     readFile
- * Uso:         c = readFile(fileName, data);
+ * Uso:         readFile(data, fileName);
  * ----------------------------------------------------------------------
  * Descripcion: Lee los datos del .csv y la almacena en el imdbTAD.
  * ----------------------------------------------------------------------
  * Recibe:      Puntero a estructura de datos, y nombre del archivo a leer
- * Devuelve:    Devuelve flag prendido si tuvo error al abrir el file
+ * Devuelve:    VOID
  */
 void readFile(imdbADT data, const char * fileName);
 
 /*
  * Funcion:     writeData
- * Uso:         c = writeData(fileName, data);
+ * Uso:         writeData(data);
  * ----------------------------------------------------------------------
  * Descripcion: Escribe los datos de la estructura en los archivos
  *              correspondientes a los queries

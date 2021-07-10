@@ -17,7 +17,7 @@
 
 /*
  * Funcion:     queryOne
- * Uso:         query1 = queryOne();
+ * Uso:         query1 = queryOne(data);
  * ----------------------------------------------------------------------
  * Descripcion: Resuelve el primer query
  * ----------------------------------------------------------------------
@@ -28,7 +28,7 @@ TQuery1 queryOne(imdbADT data);
 
 /*
  * Funcion:     queryTwo
- * Uso:         query2 = queryTwo();
+ * Uso:         query2 = queryTwo(data, &flag);
  * ----------------------------------------------------------------------
  * Descripcion: Resuelve el segundo query
  * ----------------------------------------------------------------------
@@ -40,7 +40,7 @@ TQuery2 queryTwo(imdbADT data, int * flag);
 
 /*
  * Funcion:     queryThree
- * Uso:         query3 = queryThree();
+ * Uso:         query3 = queryThree(data, &error);
  * ----------------------------------------------------------------------
  * Descripcion: Resuelve el tercer query
  * ----------------------------------------------------------------------

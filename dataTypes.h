@@ -50,7 +50,7 @@ typedef struct TQuery3 {
 #define PELI 1
 #define SERIE 2
 #define NO_FIELD 0
-/**/
+
 
 #define EMPTY 0             // Si en copyText no se necesita la funcionalidad de SEPARADOR
 #define BLOCK 10

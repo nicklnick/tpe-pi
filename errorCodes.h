@@ -20,7 +20,6 @@
 /* Codigos de error */
 #define ERROR_DE_ARGS 20
 #define INSUFFICIENT_MEM 10
-#define ERROR_DE_FILE 5
 #define INVALID_YEAR 3
 
 #define OK 0
@@ -31,12 +30,6 @@
                             if( errno == ENOMEM )           \
                                 (error) = INSUFFICIENT_MEM; \
                        };
-
-/* Hubo un error al intentar manipular el file */
-#define FILE_ERROR(file, retValue)  {                            \
-                                        if( (file) == NULL )     \
-                                            return retValue;     \
-                                    };
 
 /* Sale de la funcion si hubieron errores */
 #define RETURN_IF_ERROR(error, retValue) {                          \

@@ -39,10 +39,10 @@ imdbADT newDataBase(int * error);
  */
 void freeADT(imdbADT data);
 
-//FRONT
+
 /*
  * Funcion:     updateData
- * Uso:         updateData(imdb, entry);
+ * Uso:         updateData(imdb, entry, &error);
  * ----------------------------------------------------------------------
  * Descripcion: Se ocupa de actualizar la Base de Datos
  * ----------------------------------------------------------------------
@@ -53,18 +53,18 @@ void freeADT(imdbADT data);
 void updateData(imdbADT data, TEntry * entry, int * error);
 
 
-//BACK
+
 /*
  * Conjunto de funciones que permiten iterar sobre la lista de años
+ * PRECONDICION: Haber llamado antes a toBeginYear
  */
 /* Resetea el iterador que recorre los años de manera descendente */
 void toBeginYear(imdbADT data);
+
 /* Se fija si hay año siguiente */
 int hasNextYear(imdbADT data);
-/*
- * - Retorna 1 si pudo mover el iterador al año siguiente.
- * - En cualquier otro caso, retorna 0.
- */
+
+/* Pasa al siguiente año, o retorna si no lo hay */
 void nextYear(imdbADT data);
 
 
@@ -74,12 +74,11 @@ void nextYear(imdbADT data);
  */
 /* Resetea el iterador que recorre los generos de manera ascendente, de un determinado año */
 void toBeginG(imdbADT data);
+
 /* Se fija si hay un genero siguiente */
 int hasNextG(imdbADT data);
-/*
- * - Retorna 1 si pudo mover el iterador al genero siguiente.
- * - En cualquier otro caso, retorna 0.
- */
+
+/* Pasa al siguiente genero, o retorna si no lo hay */
 void nextG(imdbADT data);
 
 
@@ -102,7 +101,7 @@ void getAmountCurrY(imdbADT data, unsigned * year, unsigned * cantPelis, unsigne
 /* PRECONDICION: Haber llamado toBeginYear */
 /*
  * Funcion:     getMostPopular
- * Uso:         mostPop = getMostPopular(imdb, type)
+ * Uso:         mostPop = getMostPopular(imdb, type, &error)
  * ----------------------------------------------------------------------
  * Descripcion: Devuelve una copia de la peli/serie con mas votos
  * ----------------------------------------------------------------------
